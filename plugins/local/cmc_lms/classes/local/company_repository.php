@@ -53,4 +53,29 @@ class company_repository {
 
         return (int) $DB->insert_record(self::TABLE, $company);
     }
+
+    /**
+     * Return a company by id.
+     *
+     * @param int $id Company id.
+     * @return stdClass
+     */
+    public function get(int $id): stdClass {
+        global $DB;
+
+        return $DB->get_record(self::TABLE, ['id' => $id], '*', MUST_EXIST);
+    }
+
+    /**
+     * Update a company record.
+     *
+     * @param stdClass $company Company data including id.
+     * @return void
+     */
+    public function update(stdClass $company): void {
+        global $DB;
+
+        $company->timemodified = time();
+        $DB->update_record(self::TABLE, $company);
+    }
 }

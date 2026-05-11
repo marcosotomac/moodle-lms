@@ -67,6 +67,31 @@ class program_repository {
     }
 
     /**
+     * Return a program by id.
+     *
+     * @param int $id Program id.
+     * @return stdClass
+     */
+    public function get(int $id): stdClass {
+        global $DB;
+
+        return $DB->get_record(self::PROGRAM_TABLE, ['id' => $id], '*', MUST_EXIST);
+    }
+
+    /**
+     * Update a program record.
+     *
+     * @param stdClass $program Program data including id.
+     * @return void
+     */
+    public function update(stdClass $program): void {
+        global $DB;
+
+        $program->timemodified = time();
+        $DB->update_record(self::PROGRAM_TABLE, $program);
+    }
+
+    /**
      * Link a Moodle course to a CMC program.
      *
      * @param int $programid Program id.

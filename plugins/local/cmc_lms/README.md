@@ -7,6 +7,7 @@
 - Empresas cliente B2B para segmentar alumnos y reportes.
 - Programas/mallas formativas compuestas por cursos Moodle.
 - Asociación ordenada Programa → Cursos.
+- UI administrativa en Moodle para gestionar empresas, programas y cursos por programa.
 - Funciones externas read-only listas para exponerse por `webservice_mcp`:
   - `local_cmc_lms_get_companies`
   - `local_cmc_lms_get_programs`
@@ -31,3 +32,17 @@ moodle/public/local/cmc_lms
 ```
 
 Después ejecutar el upgrade de Moodle.
+
+## Administración
+
+Una vez instalado, las páginas quedan bajo administración del sitio:
+
+- `Site administration → Plugins → CMC LMS domain → Client companies`
+- `Site administration → Plugins → CMC LMS domain → Training programs`
+
+También se puede acceder directamente en desarrollo:
+
+```text
+/local/cmc_lms/companies.php
+/local/cmc_lms/programs.php
+```
