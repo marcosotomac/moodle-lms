@@ -1,0 +1,10 @@
+.DS_Store
+
+# Local Moodle development checkouts. Moodle core and moodle-docker are pulled
+# locally for development, but are intentionally not vendored into this repo.
+/moodle/
+/moodle-docker/
+
+# Local generated/runtime files.
+/moodledata/
+*.log
