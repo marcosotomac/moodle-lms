@@ -10,6 +10,10 @@
 - Funciones externas read-only listas para exponerse por `webservice_mcp`:
   - `local_cmc_lms_get_companies`
   - `local_cmc_lms_get_programs`
+- Funciones externas write protegidas por capabilities:
+  - `local_cmc_lms_create_company`
+  - `local_cmc_lms_create_program`
+  - `local_cmc_lms_add_program_course`
 
 ## Requerimientos cubiertos inicialmente
 

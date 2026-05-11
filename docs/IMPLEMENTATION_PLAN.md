@@ -13,6 +13,7 @@ Incluye:
 - Programas/mallas formativas.
 - Relación programa ↔ cursos Moodle.
 - Funciones externas read-only para consumo vía MCP.
+- Funciones externas write protegidas por capabilities para crear empresas, crear programas y vincular cursos.
 
 Requerimientos atendidos:
 
@@ -24,7 +25,7 @@ Requerimientos atendidos:
 ## Próximos cortes sugeridos
 
 1. UI administrativa para Empresas y Programas.
-2. Funciones write para crear/actualizar empresas y programas vía API/MCP.
+2. UI administrativa para operar Empresas y Programas sin depender de llamadas MCP.
 3. Asignación automática de alumnos/cursos tras cierre de venta CRM.
 4. Dashboard/reportes B2B.
 5. Certificados con código único/QR.

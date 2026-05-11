@@ -36,6 +36,30 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/cmc_lms:viewprograms',
     ],
+    'local_cmc_lms_create_company' => [
+        'classname' => 'local_cmc_lms\external\create_company',
+        'methodname' => 'execute',
+        'description' => 'Creates a B2B client company for CMC LMS segmentation.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/cmc_lms:managecompanies',
+    ],
+    'local_cmc_lms_create_program' => [
+        'classname' => 'local_cmc_lms\external\create_program',
+        'methodname' => 'execute',
+        'description' => 'Creates a CMC training program or curriculum mesh.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/cmc_lms:manageprograms',
+    ],
+    'local_cmc_lms_add_program_course' => [
+        'classname' => 'local_cmc_lms\external\add_program_course',
+        'methodname' => 'execute',
+        'description' => 'Links an existing Moodle course to a CMC training program.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/cmc_lms:manageprograms',
+    ],
 ];
 
 $services = [
@@ -43,6 +67,9 @@ $services = [
         'functions' => [
             'local_cmc_lms_get_companies',
             'local_cmc_lms_get_programs',
+            'local_cmc_lms_create_company',
+            'local_cmc_lms_create_program',
+            'local_cmc_lms_add_program_course',
         ],
         'enabled' => 0,
         'restrictedusers' => 1,

@@ -18,6 +18,10 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'CMC LMS domain';
 $string['privacy:metadata'] = 'The CMC LMS domain plugin stores B2B company and program metadata configured by site managers.';
+$string['privacy:metadata:company_user'] = 'Stores associations between Moodle users and CMC client companies.';
+$string['privacy:metadata:company_user:companyid'] = 'The associated CMC client company.';
+$string['privacy:metadata:company_user:userid'] = 'The Moodle user associated with the company.';
+$string['privacy:metadata:company_user:companyrole'] = 'The role of the user inside the client company context.';
 $string['cmc_lms:managecompanies'] = 'Manage CMC client companies';
 $string['cmc_lms:viewcompanies'] = 'View CMC client companies';
 $string['cmc_lms:manageprograms'] = 'Manage CMC training programs';
