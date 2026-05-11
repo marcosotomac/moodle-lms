@@ -34,6 +34,11 @@ class create_program extends external_api {
             'shortname' => new external_value(PARAM_ALPHANUMEXT, 'Stable program shortname.'),
             'description' => new external_value(PARAM_RAW, 'Program description.', VALUE_DEFAULT, ''),
             'active' => new external_value(PARAM_BOOL, 'Whether the program is active.', VALUE_DEFAULT, true),
+            'versioncode' => new external_value(PARAM_TEXT, 'Program version label/code.', VALUE_DEFAULT, 'v1'),
+            'modality' => new external_value(PARAM_ALPHA, 'Program modality: async, sync, or blended.', VALUE_DEFAULT, 'async'),
+            'versionnotes' => new external_value(PARAM_TEXT, 'Program version notes/change summary.', VALUE_DEFAULT, ''),
+            'effectivefrom' => new external_value(PARAM_INT, 'Unix timestamp when this version becomes effective.', VALUE_DEFAULT, 0),
+            'plannedhours' => new external_value(PARAM_FLOAT, 'Planned program hours.', VALUE_DEFAULT, 0),
         ]);
     }
 
@@ -46,12 +51,27 @@ class create_program extends external_api {
      * @param bool $active Active flag.
      * @return array
      */
-    public static function execute(string $name, string $shortname, string $description = '', bool $active = true): array {
+    public static function execute(
+        string $name,
+        string $shortname,
+        string $description = '',
+        bool $active = true,
+        string $versioncode = 'v1',
+        string $modality = 'async',
+        string $versionnotes = '',
+        int $effectivefrom = 0,
+        float $plannedhours = 0
+    ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'name' => $name,
             'shortname' => $shortname,
             'description' => $description,
             'active' => $active,
+            'versioncode' => $versioncode,
+            'modality' => $modality,
+            'versionnotes' => $versionnotes,
+            'effectivefrom' => $effectivefrom,
+            'plannedhours' => $plannedhours,
         ]);
 
         $context = context_system::instance();
@@ -64,13 +84,24 @@ class create_program extends external_api {
             'shortname' => $params['shortname'],
             'description' => $params['description'],
             'active' => $params['active'] ? 1 : 0,
+            'versioncode' => $params['versioncode'],
+            'modality' => $params['modality'],
+            'versionnotes' => $params['versionnotes'],
+            'effectivefrom' => $params['effectivefrom'],
+            'plannedhours' => $params['plannedhours'],
         ]);
+        $program = $repository->get($id);
 
         return [
             'id' => $id,
             'name' => $params['name'],
             'shortname' => $params['shortname'],
             'active' => $params['active'],
+            'versioncode' => $program->versioncode,
+            'modality' => $program->modality,
+            'versionnotes' => $program->versionnotes,
+            'effectivefrom' => (int)$program->effectivefrom,
+            'plannedhours' => (float)$program->plannedhours,
         ];
     }
 
@@ -85,6 +116,11 @@ class create_program extends external_api {
             'name' => new external_value(PARAM_TEXT, 'Program name.'),
             'shortname' => new external_value(PARAM_ALPHANUMEXT, 'Program shortname.'),
             'active' => new external_value(PARAM_BOOL, 'Whether the program is active.'),
+            'versioncode' => new external_value(PARAM_TEXT, 'Program version label/code.'),
+            'modality' => new external_value(PARAM_ALPHA, 'Program modality.'),
+            'versionnotes' => new external_value(PARAM_TEXT, 'Program version notes/change summary.'),
+            'effectivefrom' => new external_value(PARAM_INT, 'Unix timestamp when this version becomes effective.'),
+            'plannedhours' => new external_value(PARAM_FLOAT, 'Planned program hours.'),
         ]);
     }
 }

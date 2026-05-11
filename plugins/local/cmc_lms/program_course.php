@@ -48,7 +48,7 @@ if ($mform->is_cancelled()) {
 }
 
 if ($data = $mform->get_data()) {
-    $repository->add_course((int)$data->programid, (int)$data->courseid, (int)$data->sortorder, !empty($data->required));
+    $repository->add_course((int)$data->programid, (int)$data->courseid, (int)$data->sortorder, !empty($data->required), $data);
     redirect($returnurl, get_string('saved', 'local_cmc_lms'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 

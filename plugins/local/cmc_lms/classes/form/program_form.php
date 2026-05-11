@@ -59,6 +59,29 @@ class program_form extends moodleform {
         $mform->addElement('textarea', 'description', get_string('description', 'local_cmc_lms'), ['rows' => 6, 'cols' => 60]);
         $mform->setType('description', PARAM_RAW);
 
+        $mform->addElement('text', 'versioncode', get_string('versioncode', 'local_cmc_lms'), ['size' => 30]);
+        $mform->setType('versioncode', PARAM_TEXT);
+        $mform->setDefault('versioncode', 'v1');
+
+        $mform->addElement('select', 'modality', get_string('modality', 'local_cmc_lms'), [
+            'async' => get_string('modalityasync', 'local_cmc_lms'),
+            'sync' => get_string('modalitysync', 'local_cmc_lms'),
+            'blended' => get_string('modalityblended', 'local_cmc_lms'),
+        ]);
+        $mform->setDefault('modality', 'async');
+
+        $mform->addElement('textarea', 'versionnotes', get_string('versionnotes', 'local_cmc_lms'), ['rows' => 4, 'cols' => 60]);
+        $mform->setType('versionnotes', PARAM_TEXT);
+
+        $mform->addElement('date_time_selector', 'effectivefrom', get_string('effectivefrom', 'local_cmc_lms'), [
+            'optional' => true,
+        ]);
+        $mform->setDefault('effectivefrom', 0);
+
+        $mform->addElement('text', 'plannedhours', get_string('plannedhours', 'local_cmc_lms'), ['size' => 10]);
+        $mform->setType('plannedhours', PARAM_FLOAT);
+        $mform->setDefault('plannedhours', 0);
+
         $mform->addElement('advcheckbox', 'active', get_string('active', 'local_cmc_lms'));
         $mform->setDefault('active', 1);
 

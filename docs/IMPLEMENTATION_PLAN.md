@@ -47,8 +47,29 @@ Requerimientos atendidos:
 - LMS 2.4/2.8: constancia/certificado verificable asociado a avance académico.
 - TDR 7: base trazable para futuras integraciones CRM/documentales por usuario, empresa y programa.
 
+## Corte 3 — Estructura, modalidad y versionamiento académico
+
+Objetivo: cerrar la base estricta de LMS 5.1 y 5.2 sin duplicar el modelo nativo de Moodle.
+
+Incluye:
+
+- Programas CMC con versión, modalidad (`async`, `sync`, `blended`), notas de cambio, fecha efectiva y horas planificadas.
+- Relación Programa → Curso enriquecida con etiqueta de contenido, formato (`video`, `document`, `external`, `lesson`, `quiz`, `other`), notas de reutilización, horas, fechas programadas, proveedor/enlace de sesión en vivo y bandera de asistencia.
+- Fundación de asistencia en `local_cmc_lms_attendance` para registrar presentes/ausentes/tarde/justificados por usuario y curso dentro de programa.
+- APIs MCP compatibles hacia atrás que aceptan campos nuevos opcionales y devuelven la metadata enriquecida.
+- UI administrativa para capturar versión/modalidad/programación sin editar Moodle core.
+
+Decisión del corte: Moodle core sigue siendo la fuente de verdad para cursos, secciones, actividades, recursos, lecciones, quizzes y completitud. El plugin CMC agrega la capa de negocio: mallas, versión, modalidad, planificación, reutilización y trazabilidad B2B.
+
+Requerimientos atendidos:
+
+- LMS 5.1: programas, cursos, metadata de módulos/lecciones vía curso Moodle, formatos de contenido, reutilización documentada y versionamiento.
+- LMS 5.2: modalidad asincrónica/sincrónica/mixta, programación, enlaces Zoom/Meet/Teams/BBB/otros y base de asistencia.
+
 ## Próximos cortes sugeridos
 
-1. Generación de PDF de certificado usando una vía compatible con Moodle core si está disponible en el entorno objetivo.
-2. Generación/renderizado QR server-side sólo si se confirma una API core/local existente; si no, mantener payload y delegar QR a la plantilla/PDF.
-3. Endurecer reportes B2B con filtros por programa/fechas y exportación CSV si el negocio lo prioriza.
+1. Roles académicos estrictos y control de acceso: coordinador académico, docente interno/externo, alumno y supervisor empresa.
+2. Evaluaciones CMC sobre Moodle Quiz: resultados históricos, criterios de aprobación y reportes.
+3. Certificados automáticos descargables PDF/QR cuando se cumplan criterios de completitud/aprobación.
+4. Panel alumno CMC con cursos activos, progreso, certificados y notificaciones.
+5. Reportes académicos completos con inscritos por curso, evaluaciones, certificados por periodo y exportación.

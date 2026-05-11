@@ -134,6 +134,109 @@ final class repository_test extends advanced_testcase {
     }
 
     /**
+     * Programs persist strict CMC versioning and modality metadata with safe defaults.
+     */
+    public function test_program_repository_persists_versioned_program_metadata(): void {
+        $this->resetAfterTest(true);
+
+        $repository = new program_repository();
+        $effectivefrom = 1778457600;
+        $programid = $repository->create((object) [
+            'name' => 'Programa Blended 5.1',
+            'shortname' => 'BLENDED51',
+            'description' => 'Programa con metadatos 5.1 estrictos.',
+            'versioncode' => '2026-Q2',
+            'modality' => 'blended',
+            'versionnotes' => 'Se agregan sesiones sincrónicas y versión formal.',
+            'effectivefrom' => $effectivefrom,
+            'plannedhours' => 24.5,
+            'active' => 1,
+        ]);
+
+        $program = $repository->get($programid);
+
+        $this->assertEquals('2026-Q2', $program->versioncode);
+        $this->assertEquals('blended', $program->modality);
+        $this->assertEquals('Se agregan sesiones sincrónicas y versión formal.', $program->versionnotes);
+        $this->assertEquals($effectivefrom, (int) $program->effectivefrom);
+        $this->assertEquals(24.5, (float) $program->plannedhours);
+    }
+
+    /**
+     * Program-course links persist content metadata, schedules, live links and attendance configuration.
+     */
+    public function test_program_repository_persists_enriched_program_course_metadata(): void {
+        $this->resetAfterTest(true);
+
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Sesión sincrónica de liderazgo',
+            'shortname' => 'LIDER-SYNC',
+        ]);
+
+        $repository = new program_repository();
+        $programid = $repository->create((object) [
+            'name' => 'Programa Liderazgo',
+            'shortname' => 'LIDER',
+            'description' => 'Malla con contenido enriquecido.',
+        ]);
+        $start = 1778544000;
+        $end = 1778551200;
+        $mappingid = $repository->add_course($programid, (int) $course->id, 20, false, (object) [
+            'contentlabel' => 'Taller sincrónico 1',
+            'contentformat' => 'external',
+            'reusenotes' => 'Reutiliza material base 2026.',
+            'plannedhours' => 2.5,
+            'schedulestart' => $start,
+            'scheduleend' => $end,
+            'liveprovider' => 'zoom',
+            'liveurl' => 'https://example.test/live/liderazgo',
+            'attendancetracking' => 1,
+        ]);
+
+        $courses = $repository->get_courses($programid);
+
+        $this->assertEquals($mappingid, (int) $courses[0]->id);
+        $this->assertEquals('Taller sincrónico 1', $courses[0]->contentlabel);
+        $this->assertEquals('external', $courses[0]->contentformat);
+        $this->assertEquals('Reutiliza material base 2026.', $courses[0]->reusenotes);
+        $this->assertEquals(2.5, (float) $courses[0]->plannedhours);
+        $this->assertEquals($start, (int) $courses[0]->schedulestart);
+        $this->assertEquals($end, (int) $courses[0]->scheduleend);
+        $this->assertEquals('zoom', $courses[0]->liveprovider);
+        $this->assertEquals('https://example.test/live/liderazgo', $courses[0]->liveurl);
+        $this->assertEquals(1, (int) $courses[0]->attendancetracking);
+    }
+
+    /**
+     * Attendance records attach learners to a specific program-course link.
+     */
+    public function test_program_repository_records_attendance_for_program_course_link(): void {
+        $this->resetAfterTest(true);
+
+        $student = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $repository = new program_repository();
+        $programid = $repository->create((object) [
+            'name' => 'Programa Asistencia',
+            'shortname' => 'ASIST',
+            'description' => 'Malla con asistencia.',
+        ]);
+        $mappingid = $repository->add_course($programid, (int) $course->id, 1, true, (object) [
+            'attendancetracking' => 1,
+        ]);
+        $timetaken = 1778547600;
+
+        $attendanceid = $repository->record_attendance($mappingid, (int) $student->id, 'late', $timetaken);
+        $rows = $repository->get_attendance($mappingid);
+
+        $this->assertCount(1, $rows);
+        $this->assertEquals($attendanceid, (int) $rows[0]->id);
+        $this->assertEquals((int) $student->id, (int) $rows[0]->userid);
+        $this->assertEquals('late', $rows[0]->status);
+        $this->assertEquals($timetaken, (int) $rows[0]->timetaken);
+    }
+
+    /**
      * Company dashboard metrics only count active associations and CMC-linked courses.
      */
     public function test_report_repository_returns_company_dashboard_metrics(): void {

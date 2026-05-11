@@ -59,6 +59,50 @@ class program_course_form extends moodleform {
         $mform->addElement('advcheckbox', 'required', get_string('required', 'local_cmc_lms'));
         $mform->setDefault('required', 1);
 
+        $mform->addElement('text', 'contentlabel', get_string('contentlabel', 'local_cmc_lms'), ['size' => 60]);
+        $mform->setType('contentlabel', PARAM_TEXT);
+
+        $mform->addElement('select', 'contentformat', get_string('contentformat', 'local_cmc_lms'), [
+            'video' => get_string('contentformatvideo', 'local_cmc_lms'),
+            'document' => get_string('contentformatdocument', 'local_cmc_lms'),
+            'external' => get_string('contentformatexternal', 'local_cmc_lms'),
+            'lesson' => get_string('contentformatlesson', 'local_cmc_lms'),
+            'quiz' => get_string('contentformatquiz', 'local_cmc_lms'),
+            'other' => get_string('contentformatother', 'local_cmc_lms'),
+        ]);
+        $mform->setDefault('contentformat', 'other');
+
+        $mform->addElement('textarea', 'reusenotes', get_string('reusenotes', 'local_cmc_lms'), ['rows' => 3, 'cols' => 60]);
+        $mform->setType('reusenotes', PARAM_TEXT);
+
+        $mform->addElement('text', 'plannedhours', get_string('plannedhours', 'local_cmc_lms'), ['size' => 10]);
+        $mform->setType('plannedhours', PARAM_FLOAT);
+        $mform->setDefault('plannedhours', 0);
+
+        $mform->addElement('date_time_selector', 'schedulestart', get_string('schedulestart', 'local_cmc_lms'), [
+            'optional' => true,
+        ]);
+        $mform->setDefault('schedulestart', 0);
+
+        $mform->addElement('date_time_selector', 'scheduleend', get_string('scheduleend', 'local_cmc_lms'), [
+            'optional' => true,
+        ]);
+        $mform->setDefault('scheduleend', 0);
+
+        $mform->addElement('select', 'liveprovider', get_string('liveprovider', 'local_cmc_lms'), [
+            '' => get_string('none'),
+            'zoom' => 'Zoom',
+            'meet' => 'Google Meet',
+            'teams' => 'Microsoft Teams',
+            'bbb' => 'BigBlueButton',
+            'other' => get_string('other'),
+        ]);
+
+        $mform->addElement('text', 'liveurl', get_string('liveurl', 'local_cmc_lms'), ['size' => 60]);
+        $mform->setType('liveurl', PARAM_URL);
+
+        $mform->addElement('advcheckbox', 'attendancetracking', get_string('attendancetracking', 'local_cmc_lms'));
+
         $this->add_action_buttons();
     }
 
@@ -78,6 +122,9 @@ class program_course_form extends moodleform {
             'courseid' => $data['courseid'],
         ])) {
             $errors['courseid'] = get_string('coursealreadylinked', 'local_cmc_lms');
+        }
+        if (!empty($data['schedulestart']) && !empty($data['scheduleend']) && $data['scheduleend'] < $data['schedulestart']) {
+            $errors['scheduleend'] = get_string('scheduleendbeforestart', 'local_cmc_lms');
         }
 
         return $errors;

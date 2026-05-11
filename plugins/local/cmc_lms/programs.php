@@ -48,6 +48,9 @@ $table = new html_table();
 $table->head = [
     get_string('programname', 'local_cmc_lms'),
     get_string('shortname'),
+    get_string('versioncode', 'local_cmc_lms'),
+    get_string('modality', 'local_cmc_lms'),
+    get_string('plannedhours', 'local_cmc_lms'),
     get_string('courses', 'local_cmc_lms'),
     get_string('status', 'local_cmc_lms'),
     get_string('actions', 'local_cmc_lms'),
@@ -56,7 +59,17 @@ $table->head = [
 foreach ($programs as $program) {
     $courses = [];
     foreach ($program->courses as $course) {
-        $courses[] = s($course->fullname) . ' (' . s($course->shortname) . ')';
+        $metadata = [];
+        if (!empty($course->contentlabel)) {
+            $metadata[] = s($course->contentlabel);
+        }
+        if (!empty($course->contentformat) && $course->contentformat !== 'other') {
+            $metadata[] = s($course->contentformat);
+        }
+        if (!empty($course->schedulestart)) {
+            $metadata[] = userdate($course->schedulestart, get_string('strftimedatetimeshort', 'langconfig'));
+        }
+        $courses[] = s($course->fullname) . ' (' . s($course->shortname) . ')' . (empty($metadata) ? '' : ' — ' . implode(' · ', $metadata));
     }
 
     if (empty($courses)) {
@@ -80,6 +93,9 @@ foreach ($programs as $program) {
     $table->data[] = [
         format_string($program->name),
         s($program->shortname),
+        s($program->versioncode ?? 'v1'),
+        get_string('modality' . ($program->modality ?? 'async'), 'local_cmc_lms'),
+        format_float((float)($program->plannedhours ?? 0), 2),
         $courselist,
         $program->active ? get_string('active', 'local_cmc_lms') : get_string('inactive', 'local_cmc_lms'),
         implode(' | ', $actions),

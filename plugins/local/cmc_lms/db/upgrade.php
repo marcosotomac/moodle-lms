@@ -64,5 +64,58 @@ function xmldb_local_cmc_lms_upgrade($oldversion): bool {
         upgrade_plugin_savepoint(true, 2026051106, 'local', 'cmc_lms');
     }
 
+    if ($oldversion < 2026051107) {
+        $table = new xmldb_table('local_cmc_lms_program');
+        $fields = [
+            new xmldb_field('versioncode', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, 'v1', 'descriptionformat'),
+            new xmldb_field('modality', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'async', 'versioncode'),
+            new xmldb_field('versionnotes', XMLDB_TYPE_TEXT, null, null, null, null, null, 'modality'),
+            new xmldb_field('effectivefrom', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'versionnotes'),
+            new xmldb_field('plannedhours', XMLDB_TYPE_NUMBER, '10, 2', null, XMLDB_NOTNULL, null, '0', 'effectivefrom'),
+        ];
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        $table = new xmldb_table('local_cmc_lms_program_course');
+        $fields = [
+            new xmldb_field('contentlabel', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'required'),
+            new xmldb_field('contentformat', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'other', 'contentlabel'),
+            new xmldb_field('reusenotes', XMLDB_TYPE_TEXT, null, null, null, null, null, 'contentformat'),
+            new xmldb_field('plannedhours', XMLDB_TYPE_NUMBER, '10, 2', null, XMLDB_NOTNULL, null, '0', 'reusenotes'),
+            new xmldb_field('schedulestart', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'plannedhours'),
+            new xmldb_field('scheduleend', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'schedulestart'),
+            new xmldb_field('liveprovider', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'scheduleend'),
+            new xmldb_field('liveurl', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'liveprovider'),
+            new xmldb_field('attendancetracking', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'liveurl'),
+        ];
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        $table = new xmldb_table('local_cmc_lms_attendance');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('programcourseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('status', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'present');
+        $table->add_field('timetaken', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('programcourse_fk', XMLDB_KEY_FOREIGN, ['programcourseid'], 'local_cmc_lms_program_course', ['id']);
+        $table->add_index('programcourse_user', XMLDB_INDEX_NOTUNIQUE, ['programcourseid', 'userid']);
+        $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, ['userid']);
+        $table->add_index('status', XMLDB_INDEX_NOTUNIQUE, ['status']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026051107, 'local', 'cmc_lms');
+    }
+
     return true;
 }

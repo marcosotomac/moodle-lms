@@ -34,6 +34,15 @@ class add_program_course extends external_api {
             'courseid' => new external_value(PARAM_INT, 'Existing Moodle course id.'),
             'sortorder' => new external_value(PARAM_INT, 'Course position inside the program.', VALUE_DEFAULT, 0),
             'required' => new external_value(PARAM_BOOL, 'Whether the course is required.', VALUE_DEFAULT, true),
+            'contentlabel' => new external_value(PARAM_TEXT, 'Section/module label or content role.', VALUE_DEFAULT, ''),
+            'contentformat' => new external_value(PARAM_ALPHA, 'Content format/category.', VALUE_DEFAULT, 'other'),
+            'reusenotes' => new external_value(PARAM_TEXT, 'Reuse source or notes.', VALUE_DEFAULT, ''),
+            'plannedhours' => new external_value(PARAM_FLOAT, 'Planned hours for this content link.', VALUE_DEFAULT, 0),
+            'schedulestart' => new external_value(PARAM_INT, 'Scheduled start timestamp.', VALUE_DEFAULT, 0),
+            'scheduleend' => new external_value(PARAM_INT, 'Scheduled end timestamp.', VALUE_DEFAULT, 0),
+            'liveprovider' => new external_value(PARAM_TEXT, 'Live session provider.', VALUE_DEFAULT, ''),
+            'liveurl' => new external_value(PARAM_TEXT, 'Live session URL.', VALUE_DEFAULT, ''),
+            'attendancetracking' => new external_value(PARAM_BOOL, 'Whether attendance tracking is enabled.', VALUE_DEFAULT, false),
         ]);
     }
 
@@ -46,7 +55,21 @@ class add_program_course extends external_api {
      * @param bool $required Required flag.
      * @return array
      */
-    public static function execute(int $programid, int $courseid, int $sortorder = 0, bool $required = true): array {
+    public static function execute(
+        int $programid,
+        int $courseid,
+        int $sortorder = 0,
+        bool $required = true,
+        string $contentlabel = '',
+        string $contentformat = 'other',
+        string $reusenotes = '',
+        float $plannedhours = 0,
+        int $schedulestart = 0,
+        int $scheduleend = 0,
+        string $liveprovider = '',
+        string $liveurl = '',
+        bool $attendancetracking = false
+    ): array {
         global $DB;
 
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -54,11 +77,25 @@ class add_program_course extends external_api {
             'courseid' => $courseid,
             'sortorder' => $sortorder,
             'required' => $required,
+            'contentlabel' => $contentlabel,
+            'contentformat' => $contentformat,
+            'reusenotes' => $reusenotes,
+            'plannedhours' => $plannedhours,
+            'schedulestart' => $schedulestart,
+            'scheduleend' => $scheduleend,
+            'liveprovider' => $liveprovider,
+            'liveurl' => $liveurl,
+            'attendancetracking' => $attendancetracking,
         ]);
 
         $context = context_system::instance();
         self::validate_context($context);
         require_capability('local/cmc_lms:manageprograms', $context);
+
+        if (!empty($params['schedulestart']) && !empty($params['scheduleend'])
+            && $params['scheduleend'] < $params['schedulestart']) {
+            throw new \invalid_parameter_exception(get_string('scheduleendbeforestart', 'local_cmc_lms'));
+        }
 
         $DB->get_record('local_cmc_lms_program', ['id' => $params['programid']], '*', MUST_EXIST);
         $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
@@ -68,8 +105,17 @@ class add_program_course extends external_api {
             $params['programid'],
             $params['courseid'],
             $params['sortorder'],
-            $params['required']
+            $params['required'],
+            (object) $params
         );
+        $courses = $repository->get_courses($params['programid']);
+        $course = null;
+        foreach ($courses as $candidate) {
+            if ((int)$candidate->id === $id) {
+                $course = $candidate;
+                break;
+            }
+        }
 
         return [
             'id' => $id,
@@ -77,6 +123,15 @@ class add_program_course extends external_api {
             'courseid' => $params['courseid'],
             'sortorder' => $params['sortorder'],
             'required' => $params['required'],
+            'contentlabel' => $course->contentlabel,
+            'contentformat' => $course->contentformat,
+            'reusenotes' => $course->reusenotes,
+            'plannedhours' => (float)$course->plannedhours,
+            'schedulestart' => (int)$course->schedulestart,
+            'scheduleend' => (int)$course->scheduleend,
+            'liveprovider' => $course->liveprovider,
+            'liveurl' => $course->liveurl,
+            'attendancetracking' => (bool)$course->attendancetracking,
         ];
     }
 
@@ -92,6 +147,15 @@ class add_program_course extends external_api {
             'courseid' => new external_value(PARAM_INT, 'Moodle course id.'),
             'sortorder' => new external_value(PARAM_INT, 'Course position inside the program.'),
             'required' => new external_value(PARAM_BOOL, 'Whether the course is required.'),
+            'contentlabel' => new external_value(PARAM_TEXT, 'Section/module label or content role.'),
+            'contentformat' => new external_value(PARAM_ALPHA, 'Content format/category.'),
+            'reusenotes' => new external_value(PARAM_TEXT, 'Reuse source or notes.'),
+            'plannedhours' => new external_value(PARAM_FLOAT, 'Planned hours for this content link.'),
+            'schedulestart' => new external_value(PARAM_INT, 'Scheduled start timestamp.'),
+            'scheduleend' => new external_value(PARAM_INT, 'Scheduled end timestamp.'),
+            'liveprovider' => new external_value(PARAM_TEXT, 'Live session provider.'),
+            'liveurl' => new external_value(PARAM_TEXT, 'Live session URL.'),
+            'attendancetracking' => new external_value(PARAM_BOOL, 'Whether attendance tracking is enabled.'),
         ]);
     }
 }

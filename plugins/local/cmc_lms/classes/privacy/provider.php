@@ -44,6 +44,13 @@ class provider implements metadata_provider {
             'status' => 'privacy:metadata:cert:status',
         ], 'privacy:metadata:cert');
 
+        $collection->add_database_table('local_cmc_lms_attendance', [
+            'programcourseid' => 'privacy:metadata:attendance:programcourseid',
+            'userid' => 'privacy:metadata:attendance:userid',
+            'status' => 'privacy:metadata:attendance:status',
+            'timetaken' => 'privacy:metadata:attendance:timetaken',
+        ], 'privacy:metadata:attendance');
+
         return $collection;
     }
 }

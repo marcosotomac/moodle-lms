@@ -8,6 +8,9 @@
 - Asociación de usuarios Moodle a empresas cliente como alumnos o supervisores.
 - Programas/mallas formativas compuestas por cursos Moodle.
 - Asociación ordenada Programa → Cursos.
+- Metadatos estrictos 5.1/5.2 para programas: versión, modalidad (`async`, `sync`, `blended`), resumen de cambios, vigencia, horas planificadas y estado activo.
+- Metadatos estrictos 5.1/5.2 para contenidos vinculados: rol/etiqueta, formato, reutilización, horas, agenda, proveedor/URL de sesión en vivo y bandera de asistencia.
+- Base mínima de asistencia por vínculo Programa → Curso y usuario (`present`, `absent`, `late`, `excused`).
 - UI administrativa en Moodle para gestionar empresas, programas y cursos por programa.
 - Reporte B2B administrativo con resumen por empresa y avance por usuario.
 - Certificados CMC emitidos para usuario+curso con empresa/programa opcionales, código único, token público de verificación y estado emitido/revocado.
@@ -31,6 +34,22 @@ El primer corte de certificados prioriza trazabilidad y verificación pública s
 - Administración capability-gated bajo `local/cmc_lms:viewcertificates` y `local/cmc_lms:issuecertificates`.
 - Verificación pública sin login en `/local/cmc_lms/verify_certificate.php?t=TOKEN_O_CODIGO`.
 - Payload QR: la URL pública de verificación. Este corte no genera imagen QR para evitar dependencias externas; se muestra la URL/payload listo para codificar.
+
+## Cobertura estricta 5.1/5.2 — Slice 1
+
+Este plugin **no duplica** el modelo académico nativo de Moodle. Cursos, secciones, actividades, recursos, lecciones, cuestionarios y finalizaciones siguen siendo responsabilidad de Moodle core y sus plugins estándar. El dominio CMC agrega la capa B2B/programática que Moodle core no conoce:
+
+- `local_cmc_lms_program`: versionado de programa, modalidad, notas de cambio, vigencia y horas planificadas.
+- `local_cmc_lms_program_course`: metadatos de rol/formato del contenido, trazabilidad de reutilización, horas planificadas, agenda, proveedor/URL de sesión sincrónica y activación de asistencia.
+- `local_cmc_lms_attendance`: fundación de asistencia por vínculo programa-curso y usuario, suficiente para registrar estados iniciales y ampliar reportes en slices posteriores.
+
+La cobertura 5.1/5.2 de este slice es deliberadamente honesta: CMC estructura, versiona y agenda la oferta; Moodle core entrega el contenido real, actividades, lecciones, cuestionarios y recursos.
+
+## Plan de implementación LMS 5.1/5.2
+
+1. ✅ Slice 1: metadatos/versionado de programas, modalidad, agenda y enlaces sincrónicos para contenidos, más tabla/repositorio de asistencia inicial.
+2. 🔲 Próximo slice: UI/reportes de asistencia, validaciones cruzadas de agenda y experiencia de edición de vínculos existentes.
+3. 🔲 Próximo slice: indicadores de cobertura por programa usando actividades, lecciones y cuestionarios de Moodle core.
 
 ### `local_cmc_lms_enrol_user_in_program`
 
