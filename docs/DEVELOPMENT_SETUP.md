@@ -19,6 +19,8 @@ moodle-lms/
 git clone --depth 1 -b MOODLE_502_STABLE https://github.com/moodle/moodle.git moodle
 git clone --depth 1 https://github.com/moodlehq/moodle-docker.git moodle-docker
 cp -R mcp moodle/public/webservice/mcp
+mkdir -p moodle/public/local
+cp -R plugins/local/cmc_lms moodle/public/local/cmc_lms
 cp moodle-docker/config.docker-template.php moodle/config.php
 ```
 
@@ -86,3 +88,12 @@ http://localhost:8000/webservice/mcp/server.php
 ```
 
 > No commitear tokens. Generarlos localmente por ambiente.
+
+## Tools CMC disponibles para MCP
+
+El plugin `local_cmc_lms` agrega funciones externas read-only que pueden asociarse al External Service usado por MCP:
+
+- `local_cmc_lms_get_companies`
+- `local_cmc_lms_get_programs`
+
+Estas funciones aparecen en `tools/list` cuando están agregadas al servicio externo del token.
