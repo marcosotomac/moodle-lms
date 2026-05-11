@@ -60,6 +60,22 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/cmc_lms:manageprograms',
     ],
+    'local_cmc_lms_get_company_users' => [
+        'classname' => 'local_cmc_lms\external\get_company_users',
+        'methodname' => 'execute',
+        'description' => 'Returns Moodle users associated with a CMC client company.',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'local/cmc_lms:viewcompanies',
+    ],
+    'local_cmc_lms_add_company_user' => [
+        'classname' => 'local_cmc_lms\external\add_company_user',
+        'methodname' => 'execute',
+        'description' => 'Associates a Moodle user with a CMC client company.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/cmc_lms:managecompanies',
+    ],
 ];
 
 $services = [
@@ -70,6 +86,8 @@ $services = [
             'local_cmc_lms_create_company',
             'local_cmc_lms_create_program',
             'local_cmc_lms_add_program_course',
+            'local_cmc_lms_get_company_users',
+            'local_cmc_lms_add_company_user',
         ],
         'enabled' => 0,
         'restrictedusers' => 1,

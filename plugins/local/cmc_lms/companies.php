@@ -61,6 +61,10 @@ foreach ($companies as $company) {
             new moodle_url('/local/cmc_lms/company_edit.php', ['id' => $company->id]),
             get_string('edit', 'local_cmc_lms')
         );
+        $actions .= ' | ' . html_writer::link(
+            new moodle_url('/local/cmc_lms/company_users.php', ['companyid' => $company->id]),
+            get_string('users', 'local_cmc_lms')
+        );
     }
 
     $table->data[] = [

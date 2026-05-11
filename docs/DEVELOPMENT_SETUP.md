@@ -98,5 +98,7 @@ El plugin `local_cmc_lms` agrega funciones externas read-only que pueden asociar
 - `local_cmc_lms_create_company`
 - `local_cmc_lms_create_program`
 - `local_cmc_lms_add_program_course`
+- `local_cmc_lms_get_company_users`
+- `local_cmc_lms_add_company_user`
 
 Estas funciones aparecen en `tools/list` cuando están agregadas al servicio externo del token.

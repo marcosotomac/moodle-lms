@@ -5,6 +5,7 @@
 ## Primer alcance
 
 - Empresas cliente B2B para segmentar alumnos y reportes.
+- Asociación de usuarios Moodle a empresas cliente como alumnos o supervisores.
 - Programas/mallas formativas compuestas por cursos Moodle.
 - Asociación ordenada Programa → Cursos.
 - UI administrativa en Moodle para gestionar empresas, programas y cursos por programa.
@@ -15,6 +16,8 @@
   - `local_cmc_lms_create_company`
   - `local_cmc_lms_create_program`
   - `local_cmc_lms_add_program_course`
+  - `local_cmc_lms_get_company_users`
+  - `local_cmc_lms_add_company_user`
 
 ## Requerimientos cubiertos inicialmente
 
@@ -46,3 +49,5 @@ También se puede acceder directamente en desarrollo:
 /local/cmc_lms/companies.php
 /local/cmc_lms/programs.php
 ```
+
+Desde la lista de empresas se puede entrar a **Users** para asociar usuarios Moodle a la empresa cliente.

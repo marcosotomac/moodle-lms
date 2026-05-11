@@ -78,4 +78,70 @@ class company_repository {
         $company->timemodified = time();
         $DB->update_record(self::TABLE, $company);
     }
+
+    /**
+     * Return users associated with a company.
+     *
+     * @param int $companyid Company id.
+     * @return stdClass[]
+     */
+    public function list_users(int $companyid): array {
+        global $DB;
+
+        $sql = "SELECT cu.id,
+                       cu.companyid,
+                       cu.userid,
+                       cu.companyrole,
+                       cu.active,
+                       u.firstname,
+                       u.lastname,
+                       u.email,
+                       u.username
+                  FROM {local_cmc_lms_company_user} cu
+                  JOIN {user} u ON u.id = cu.userid
+                 WHERE cu.companyid = :companyid
+                   AND u.deleted = 0
+              ORDER BY u.lastname ASC, u.firstname ASC, cu.companyrole ASC";
+
+        return array_values($DB->get_records_sql($sql, ['companyid' => $companyid]));
+    }
+
+    /**
+     * Associate a Moodle user with a company.
+     *
+     * The association is idempotent per company/user/role tuple: if it already
+     * exists, the active flag is updated instead of creating a duplicate.
+     *
+     * @param int $companyid Company id.
+     * @param int $userid Moodle user id.
+     * @param string $companyrole Role inside the B2B company context.
+     * @param bool $active Whether the association is active.
+     * @return int Association id.
+     */
+    public function add_user(int $companyid, int $userid, string $companyrole = 'student', bool $active = true): int {
+        global $DB;
+
+        $now = time();
+        $existing = $DB->get_record('local_cmc_lms_company_user', [
+            'companyid' => $companyid,
+            'userid' => $userid,
+            'companyrole' => $companyrole,
+        ]);
+
+        if ($existing) {
+            $existing->active = $active ? 1 : 0;
+            $existing->timemodified = $now;
+            $DB->update_record('local_cmc_lms_company_user', $existing);
+            return (int) $existing->id;
+        }
+
+        return (int) $DB->insert_record('local_cmc_lms_company_user', (object) [
+            'companyid' => $companyid,
+            'userid' => $userid,
+            'companyrole' => $companyrole,
+            'active' => $active ? 1 : 0,
+            'timecreated' => $now,
+            'timemodified' => $now,
+        ]);
+    }
 }
