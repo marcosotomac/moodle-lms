@@ -91,7 +91,7 @@ http://localhost:8000/webservice/mcp/server.php
 
 ## Tools CMC disponibles para MCP
 
-El plugin `local_cmc_lms` agrega funciones externas read-only que pueden asociarse al External Service usado por MCP:
+El plugin `local_cmc_lms` agrega funciones externas read/write que pueden asociarse al External Service usado por MCP:
 
 - `local_cmc_lms_get_companies`
 - `local_cmc_lms_get_programs`
@@ -100,5 +100,8 @@ El plugin `local_cmc_lms` agrega funciones externas read-only que pueden asociar
 - `local_cmc_lms_add_program_course`
 - `local_cmc_lms_get_company_users`
 - `local_cmc_lms_add_company_user`
+- `local_cmc_lms_enrol_user_in_program`
 
 Estas funciones aparecen en `tools/list` cuando están agregadas al servicio externo del token.
+
+`local_cmc_lms_enrol_user_in_program` es la tool de matriculación por programa: requiere `companyid`, `userid`, `programid` y opcionalmente `companyrole`/`roleshortname`; asocia usuario↔empresa y devuelve el estado por curso (`enrolled` o `already_enrolled`).

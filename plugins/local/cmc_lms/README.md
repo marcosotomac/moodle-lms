@@ -18,6 +18,16 @@
   - `local_cmc_lms_add_program_course`
   - `local_cmc_lms_get_company_users`
   - `local_cmc_lms_add_company_user`
+  - `local_cmc_lms_enrol_user_in_program`
+
+### `local_cmc_lms_enrol_user_in_program`
+
+Asocia idempotentemente un usuario Moodle a una empresa cliente y lo matricula mediante enrolment manual en todos los cursos Moodle vinculados a un programa CMC.
+
+- Parámetros: `companyid`, `userid`, `programid`, `companyrole` opcional (`student`), `roleshortname` opcional (`student`).
+- Requiere contexto sistema y ambas capabilities: `local/cmc_lms:managecompanies` y `local/cmc_lms:manageprograms`.
+- Valida existencia de empresa, programa, usuario activo/no eliminado y rol Moodle por shortname.
+- Retorna `companyassociationid`, ids de entrada y `enrolments[]` con `courseid`, `shortname` y `status` (`enrolled` o `already_enrolled`).
 
 ## Requerimientos cubiertos inicialmente
 

@@ -16,6 +16,7 @@ Incluye:
 - Funciones externas write protegidas por capabilities para crear empresas, crear programas y vincular cursos.
 - UI administrativa inicial para gestionar empresas, programas y cursos vinculados.
 - UI/API para asociar usuarios Moodle a empresas cliente con rol de alumno o supervisor.
+- Tool MCP para asociar usuario↔empresa y matricularlo en todos los cursos de un programa.
 
 Requerimientos atendidos:
 
@@ -26,6 +27,5 @@ Requerimientos atendidos:
 
 ## Próximos cortes sugeridos
 
-1. Asignación automática de alumnos/cursos tras cierre de venta CRM.
-2. Dashboard/reportes B2B.
-3. Certificados con código único/QR.
+1. Dashboard/reportes B2B.
+2. Certificados con código único/QR.

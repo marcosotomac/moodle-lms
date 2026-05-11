@@ -41,7 +41,7 @@ class program_repository {
 
         $result = [];
         foreach ($programs as $program) {
-            $program->courses = $this->get_program_courses((int) $program->id);
+            $program->courses = $this->get_courses((int) $program->id);
             $result[] = $program;
         }
 
@@ -120,7 +120,7 @@ class program_repository {
      * @param int $programid Program id.
      * @return array
      */
-    private function get_program_courses(int $programid): array {
+    public function get_courses(int $programid): array {
         global $DB;
 
         $sql = "SELECT pc.id,

@@ -9,8 +9,7 @@
 /**
  * Web service definitions for local_cmc_lms.
  *
- * These functions are intentionally read-only for the first development slice.
- * They are designed to be exposed through webservice_mcp as MCP tools.
+ * These functions are designed to be exposed through webservice_mcp as MCP tools.
  *
  * @package    local_cmc_lms
  * @copyright  2026 CMC & Soluciones en Gestión Humana
@@ -76,6 +75,14 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/cmc_lms:managecompanies',
     ],
+    'local_cmc_lms_enrol_user_in_program' => [
+        'classname' => 'local_cmc_lms\external\enrol_user_in_program',
+        'methodname' => 'execute',
+        'description' => 'Associates a user with a company and enrols the user in every Moodle course linked to a CMC program.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/cmc_lms:manageprograms,local/cmc_lms:managecompanies',
+    ],
 ];
 
 $services = [
@@ -88,6 +95,7 @@ $services = [
             'local_cmc_lms_add_program_course',
             'local_cmc_lms_get_company_users',
             'local_cmc_lms_add_company_user',
+            'local_cmc_lms_enrol_user_in_program',
         ],
         'enabled' => 0,
         'restrictedusers' => 1,
