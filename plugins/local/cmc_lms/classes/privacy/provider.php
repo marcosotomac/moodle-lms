@@ -32,6 +32,18 @@ class provider implements metadata_provider {
             'companyrole' => 'privacy:metadata:company_user:companyrole',
         ], 'privacy:metadata:company_user');
 
+        $collection->add_database_table('local_cmc_lms_cert', [
+            'userid' => 'privacy:metadata:cert:userid',
+            'courseid' => 'privacy:metadata:cert:courseid',
+            'companyid' => 'privacy:metadata:cert:companyid',
+            'programid' => 'privacy:metadata:cert:programid',
+            'code' => 'privacy:metadata:cert:code',
+            'verifytoken' => 'privacy:metadata:cert:verifytoken',
+            'timeissued' => 'privacy:metadata:cert:timeissued',
+            'issuerid' => 'privacy:metadata:cert:issuerid',
+            'status' => 'privacy:metadata:cert:status',
+        ], 'privacy:metadata:cert');
+
         return $collection;
     }
 }

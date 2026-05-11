@@ -20,6 +20,7 @@ $capabilities = [
     'local/cmc_lms:viewcompanies',
     'local/cmc_lms:viewprograms',
     'local/cmc_lms:viewreports',
+    'local/cmc_lms:viewcertificates',
 ];
 
 if ($hassiteconfig || has_any_capability($capabilities, context_system::instance())) {
@@ -40,6 +41,15 @@ if ($hassiteconfig || has_any_capability($capabilities, context_system::instance
             get_string('programs', 'local_cmc_lms'),
             new moodle_url('/local/cmc_lms/programs.php'),
             'local/cmc_lms:viewprograms'
+        )
+    );
+    $ADMIN->add(
+        'local_cmc_lms',
+        new admin_externalpage(
+            'local_cmc_lms_certificates',
+            get_string('certificates', 'local_cmc_lms'),
+            new moodle_url('/local/cmc_lms/certificates.php'),
+            'local/cmc_lms:viewcertificates'
         )
     );
     $ADMIN->add(

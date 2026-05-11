@@ -10,6 +10,7 @@
 - Asociación ordenada Programa → Cursos.
 - UI administrativa en Moodle para gestionar empresas, programas y cursos por programa.
 - Reporte B2B administrativo con resumen por empresa y avance por usuario.
+- Certificados CMC emitidos para usuario+curso con empresa/programa opcionales, código único, token público de verificación y estado emitido/revocado.
 - Funciones externas read/write listas para exponerse por `webservice_mcp`:
   - `local_cmc_lms_get_companies`
   - `local_cmc_lms_get_programs`
@@ -20,6 +21,16 @@
   - `local_cmc_lms_get_company_users`
   - `local_cmc_lms_add_company_user`
   - `local_cmc_lms_enrol_user_in_program`
+
+## Certificados CMC
+
+El primer corte de certificados prioriza trazabilidad y verificación pública sin agregar dependencias externas:
+
+- Tabla `local_cmc_lms_cert` con usuario Moodle, curso Moodle, empresa/programa CMC opcionales, código legible único, token de verificación, emisor, fecha de emisión y metadatos de revocación.
+- Emisión idempotente para el mismo usuario+curso+empresa+programa mientras el certificado siga en estado `issued`.
+- Administración capability-gated bajo `local/cmc_lms:viewcertificates` y `local/cmc_lms:issuecertificates`.
+- Verificación pública sin login en `/local/cmc_lms/verify_certificate.php?t=TOKEN_O_CODIGO`.
+- Payload QR: la URL pública de verificación. Este corte no genera imagen QR para evitar dependencias externas; se muestra la URL/payload listo para codificar.
 
 ### `local_cmc_lms_enrol_user_in_program`
 
@@ -36,6 +47,7 @@ Asocia idempotentemente un usuario Moodle a una empresa cliente y lo matricula m
 - Asociación de usuarios a empresas cliente.
 - Base para filtro B2B en reportes académicos.
 - Dashboard B2B inicial con métricas de usuarios, matrículas y finalizaciones por empresa.
+- Emisión/revocación administrativa de certificados y verificación pública por código/token.
 - Base para integración MCP/REST sin acoplarse a UI.
 
 ## Instalación local
@@ -54,6 +66,7 @@ Una vez instalado, las páginas quedan bajo administración del sitio:
 
 - `Site administration → Plugins → CMC LMS domain → Client companies`
 - `Site administration → Plugins → CMC LMS domain → Training programs`
+- `Site administration → Plugins → CMC LMS domain → Certificates`
 - `Site administration → Plugins → CMC LMS domain → B2B reports`
 
 También se puede acceder directamente en desarrollo:
@@ -61,7 +74,9 @@ También se puede acceder directamente en desarrollo:
 ```text
 /local/cmc_lms/companies.php
 /local/cmc_lms/programs.php
+/local/cmc_lms/certificates.php
 /local/cmc_lms/reports.php
+/local/cmc_lms/verify_certificate.php?t=TOKEN_O_CODIGO
 ```
 
 Desde la lista de empresas se puede entrar a **Users** para asociar usuarios Moodle a la empresa cliente.

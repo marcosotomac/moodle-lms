@@ -52,4 +52,18 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+    'local/cmc_lms:issuecertificates' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/cmc_lms:viewcertificates' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

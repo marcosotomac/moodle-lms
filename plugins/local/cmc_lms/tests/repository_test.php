@@ -9,6 +9,7 @@
 namespace local_cmc_lms;
 
 use advanced_testcase;
+use local_cmc_lms\local\certificate_repository;
 use local_cmc_lms\local\company_repository;
 use local_cmc_lms\local\program_repository;
 use local_cmc_lms\local\report_repository;
@@ -20,10 +21,65 @@ use local_cmc_lms\local\report_repository;
  * @copyright  2026 CMC & Soluciones en Gestión Humana
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_cmc_lms\local\company_repository
+ * @covers     \local_cmc_lms\local\certificate_repository
  * @covers     \local_cmc_lms\local\program_repository
  * @covers     \local_cmc_lms\local\report_repository
  */
 final class repository_test extends advanced_testcase {
+    /**
+     * Certificates are idempotent per active user/course/company/program tuple and publicly verifiable.
+     */
+    public function test_certificate_repository_issues_idempotently_and_verifies(): void {
+        $this->resetAfterTest(true);
+
+        $issuer = $this->getDataGenerator()->create_user();
+        $student = $this->getDataGenerator()->create_user([
+            'firstname' => 'Grace',
+            'lastname' => 'Hopper',
+        ]);
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Gestión de Calidad',
+            'shortname' => 'CALIDAD',
+        ]);
+
+        $companyrepository = new company_repository();
+        $companyid = $companyrepository->create((object) [
+            'name' => 'CMC Certificados',
+            'shortname' => 'CMC-CERT',
+            'country' => 'PE',
+        ]);
+
+        $programrepository = new program_repository();
+        $programid = $programrepository->create((object) [
+            'name' => 'Programa Certificable',
+            'shortname' => 'CERT',
+            'description' => 'Programa usado para certificados.',
+        ]);
+
+        $repository = new certificate_repository();
+        $first = $repository->issue((int) $student->id, (int) $course->id, $companyid, $programid, (int) $issuer->id);
+        $second = $repository->issue((int) $student->id, (int) $course->id, $companyid, $programid, (int) $issuer->id);
+
+        $this->assertEquals((int) $first->id, (int) $second->id);
+        $this->assertStringStartsWith('CMC-' . date('Y') . '-U' . $student->id . '-C' . $course->id . '-', $first->code);
+        $this->assertMatchesRegularExpression('/^[a-f0-9]{64}$/', $first->verifytoken);
+
+        $verified = $repository->get_for_verification($first->verifytoken);
+        $this->assertNotNull($verified);
+        $this->assertEquals('Grace Hopper', $verified->userfullname);
+        $this->assertEquals('Gestión de Calidad', $verified->coursefullname);
+        $this->assertEquals(certificate_repository::STATUS_ISSUED, $verified->status);
+
+        $bycode = $repository->get_for_verification($first->code);
+        $this->assertNotNull($bycode);
+        $this->assertEquals((int) $first->id, (int) $bycode->id);
+
+        $repository->revoke((int) $first->id, (int) $issuer->id, 'Test revocation');
+        $revoked = $repository->get_for_verification($first->verifytoken);
+        $this->assertEquals(certificate_repository::STATUS_REVOKED, $revoked->status);
+        $this->assertEquals('Test revocation', $revoked->revocationreason);
+    }
+
     /**
      * Companies are filtered by active state by default.
      */
