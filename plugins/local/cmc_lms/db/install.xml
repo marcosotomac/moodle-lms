@@ -115,6 +115,26 @@
         <INDEX NAME="status" UNIQUE="false" FIELDS="status"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="local_cmc_lms_program_role" COMMENT="CMC business role assignments scoped to training programs">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="programid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="cmcrole" TYPE="char" LENGTH="50" NOTNULL="true" DEFAULT="teacher_internal" SEQUENCE="false"/>
+        <FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="program_fk" TYPE="foreign" FIELDS="programid" REFTABLE="local_cmc_lms_program" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="program_user_role" UNIQUE="true" FIELDS="programid, userid, cmcrole"/>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+        <INDEX NAME="cmcrole" UNIQUE="false" FIELDS="cmcrole"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="local_cmc_lms_cert" COMMENT="Issued CMC course certificates with public verification tokens">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>

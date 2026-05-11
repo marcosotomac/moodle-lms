@@ -8,8 +8,8 @@
 
 namespace local_cmc_lms\form;
 
-use moodleform;
 use local_cmc_lms\local\role_repository;
+use moodleform;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -17,13 +17,13 @@ global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 
 /**
- * Form for associating Moodle users with a CMC client company.
+ * Form for assigning CMC coordinator/teacher roles to a program.
  *
  * @package    local_cmc_lms
  * @copyright  2026 CMC & Soluciones en Gestión Humana
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class company_user_form extends moodleform {
+class program_role_form extends moodleform {
     /**
      * Define form fields.
      *
@@ -31,17 +31,24 @@ class company_user_form extends moodleform {
      */
     public function definition(): void {
         $mform = $this->_form;
+        $programs = $this->_customdata['programs'] ?? [];
         $users = $this->_customdata['users'] ?? [];
 
-        $mform->addElement('hidden', 'companyid');
-        $mform->setType('companyid', PARAM_INT);
+        $mform->addElement('select', 'programid', get_string('program', 'local_cmc_lms'), $programs);
+        $mform->addRule('programid', null, 'required');
+        $mform->setType('programid', PARAM_INT);
 
         $mform->addElement('select', 'userid', get_string('user', 'local_cmc_lms'), $users);
         $mform->addRule('userid', null, 'required');
+        $mform->setType('userid', PARAM_INT);
 
-        $roles = role_repository::role_options(role_repository::COMPANY_ROLES);
-        $mform->addElement('select', 'companyrole', get_string('companyrole', 'local_cmc_lms'), $roles);
-        $mform->setType('companyrole', PARAM_ALPHANUMEXT);
+        $mform->addElement(
+            'select',
+            'cmcrole',
+            get_string('cmcrole', 'local_cmc_lms'),
+            role_repository::role_options(role_repository::PROGRAM_ROLES)
+        );
+        $mform->setType('cmcrole', PARAM_ALPHANUMEXT);
 
         $mform->addElement('advcheckbox', 'active', get_string('active', 'local_cmc_lms'));
         $mform->setDefault('active', 1);

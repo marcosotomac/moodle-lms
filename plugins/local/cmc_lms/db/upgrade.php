@@ -117,5 +117,30 @@ function xmldb_local_cmc_lms_upgrade($oldversion): bool {
         upgrade_plugin_savepoint(true, 2026051107, 'local', 'cmc_lms');
     }
 
+    if ($oldversion < 2026051108) {
+        $table = new xmldb_table('local_cmc_lms_program_role');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('programid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('cmcrole', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, 'teacher_internal');
+        $table->add_field('active', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('program_fk', XMLDB_KEY_FOREIGN, ['programid'], 'local_cmc_lms_program', ['id']);
+
+        $table->add_index('program_user_role', XMLDB_INDEX_UNIQUE, ['programid', 'userid', 'cmcrole']);
+        $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, ['userid']);
+        $table->add_index('cmcrole', XMLDB_INDEX_NOTUNIQUE, ['cmcrole']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026051108, 'local', 'cmc_lms');
+    }
+
     return true;
 }

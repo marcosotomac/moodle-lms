@@ -83,6 +83,14 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/cmc_lms:manageprograms,local/cmc_lms:managecompanies',
     ],
+    'local_cmc_lms_assign_program_role' => [
+        'classname' => 'local_cmc_lms\external\assign_program_role',
+        'methodname' => 'execute',
+        'description' => 'Assigns a CMC coordinator or teacher business role to a Moodle user for a training program.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/cmc_lms:manageprogramroles',
+    ],
 ];
 
 $services = [
@@ -96,6 +104,7 @@ $services = [
             'local_cmc_lms_get_company_users',
             'local_cmc_lms_add_company_user',
             'local_cmc_lms_enrol_user_in_program',
+            'local_cmc_lms_assign_program_role',
         ],
         'enabled' => 0,
         'restrictedusers' => 1,

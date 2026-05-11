@@ -19,6 +19,7 @@ require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
 use local_cmc_lms\local\company_repository;
+use local_cmc_lms\local\role_repository;
 
 $companyid = required_param('companyid', PARAM_INT);
 $returnurl = new moodle_url('/local/cmc_lms/companies.php');
@@ -67,7 +68,7 @@ foreach ($users as $user) {
     $table->data[] = [
         fullname($user),
         s($user->email),
-        get_string($user->companyrole, 'local_cmc_lms'),
+        get_string(role_repository::display_key($user->companyrole), 'local_cmc_lms'),
         $user->active ? get_string('active', 'local_cmc_lms') : get_string('inactive', 'local_cmc_lms'),
     ];
 }

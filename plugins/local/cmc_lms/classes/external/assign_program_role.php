@@ -13,17 +13,17 @@ use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
-use local_cmc_lms\local\company_repository;
+use local_cmc_lms\local\program_repository;
 use local_cmc_lms\local\role_repository;
 
 /**
- * External function associating a Moodle user with a company.
+ * External function assigning a CMC program business role to a Moodle user.
  *
  * @package    local_cmc_lms
  * @copyright  2026 CMC & Soluciones en Gestión Humana
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class add_company_user extends external_api {
+class assign_program_role extends external_api {
     /**
      * Describe input parameters.
      *
@@ -31,54 +31,57 @@ class add_company_user extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'companyid' => new external_value(PARAM_INT, 'CMC client company id.'),
+            'programid' => new external_value(PARAM_INT, 'CMC training program id.'),
             'userid' => new external_value(PARAM_INT, 'Moodle user id.'),
-            'companyrole' => new external_value(PARAM_ALPHANUMEXT, 'Role inside the company context.', VALUE_DEFAULT, 'student'),
-            'active' => new external_value(PARAM_BOOL, 'Whether the association is active.', VALUE_DEFAULT, true),
+            'cmcrole' => new external_value(PARAM_ALPHANUMEXT, 'CMC program role.', VALUE_DEFAULT, role_repository::ROLE_TEACHER_INTERNAL),
+            'active' => new external_value(PARAM_BOOL, 'Whether the assignment is active.', VALUE_DEFAULT, true),
         ]);
     }
 
     /**
      * Execute the function.
      *
-     * @param int $companyid Company id.
+     * @param int $programid Program id.
      * @param int $userid Moodle user id.
-     * @param string $companyrole Company context role.
+     * @param string $cmcrole CMC program role.
      * @param bool $active Active flag.
      * @return array
      */
-    public static function execute(int $companyid, int $userid, string $companyrole = 'student', bool $active = true): array {
+    public static function execute(
+        int $programid,
+        int $userid,
+        string $cmcrole = role_repository::ROLE_TEACHER_INTERNAL,
+        bool $active = true
+    ): array {
         global $DB;
 
         $params = self::validate_parameters(self::execute_parameters(), [
-            'companyid' => $companyid,
+            'programid' => $programid,
             'userid' => $userid,
-            'companyrole' => $companyrole,
+            'cmcrole' => $cmcrole,
             'active' => $active,
         ]);
 
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('local/cmc_lms:managecompanies', $context);
+        require_capability('local/cmc_lms:manageprogramroles', $context);
 
-        $repository = new company_repository();
-        $repository->get($params['companyid']);
+        (new program_repository())->get($params['programid']);
         $DB->get_record('user', ['id' => $params['userid'], 'deleted' => 0], '*', MUST_EXIST);
 
-        $companyrole = role_repository::normalise_company_role($params['companyrole']);
-
-        $id = $repository->add_user(
-            $params['companyid'],
+        $cmcrole = role_repository::normalise_program_role($params['cmcrole']);
+        $id = (new role_repository())->assign_program_role(
+            $params['programid'],
             $params['userid'],
-            $companyrole,
+            $cmcrole,
             $params['active']
         );
 
         return [
             'id' => $id,
-            'companyid' => $params['companyid'],
+            'programid' => $params['programid'],
             'userid' => $params['userid'],
-            'companyrole' => $companyrole,
+            'cmcrole' => $cmcrole,
             'active' => $params['active'],
         ];
     }
@@ -90,11 +93,11 @@ class add_company_user extends external_api {
      */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-            'id' => new external_value(PARAM_INT, 'Company-user association id.'),
-            'companyid' => new external_value(PARAM_INT, 'Company id.'),
+            'id' => new external_value(PARAM_INT, 'Program role assignment id.'),
+            'programid' => new external_value(PARAM_INT, 'Program id.'),
             'userid' => new external_value(PARAM_INT, 'Moodle user id.'),
-            'companyrole' => new external_value(PARAM_ALPHANUMEXT, 'Role inside the company context.'),
-            'active' => new external_value(PARAM_BOOL, 'Whether the association is active.'),
+            'cmcrole' => new external_value(PARAM_ALPHANUMEXT, 'CMC program role.'),
+            'active' => new external_value(PARAM_BOOL, 'Whether the assignment is active.'),
         ]);
     }
 }

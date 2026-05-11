@@ -45,6 +45,35 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+    'local/cmc_lms:manageprogramcontent' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/cmc_lms:manageprogramroles' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/cmc_lms:teachprograms' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [],
+    ],
+    'local/cmc_lms:viewstudentpanel' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [],
+    ],
+    'local/cmc_lms:viewcompanyreports' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [],
+    ],
     'local/cmc_lms:viewreports' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,

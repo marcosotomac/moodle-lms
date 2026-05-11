@@ -13,6 +13,7 @@ use local_cmc_lms\local\certificate_repository;
 use local_cmc_lms\local\company_repository;
 use local_cmc_lms\local\program_repository;
 use local_cmc_lms\local\report_repository;
+use local_cmc_lms\local\role_repository;
 
 /**
  * Repository tests for local_cmc_lms.
@@ -24,6 +25,7 @@ use local_cmc_lms\local\report_repository;
  * @covers     \local_cmc_lms\local\certificate_repository
  * @covers     \local_cmc_lms\local\program_repository
  * @covers     \local_cmc_lms\local\report_repository
+ * @covers     \local_cmc_lms\local\role_repository
  */
 final class repository_test extends advanced_testcase {
     /**
@@ -104,6 +106,38 @@ final class repository_test extends advanced_testcase {
 
         $this->assertCount(1, $companies);
         $this->assertEquals('CMC-ACTIVO', $companies[0]->shortname);
+    }
+
+    /**
+     * Company roles accept the strict CMC role model and normalise legacy supervisor values.
+     */
+    public function test_company_repository_normalises_supported_company_roles(): void {
+        $this->resetAfterTest(true);
+
+        $student = $this->getDataGenerator()->create_user();
+        $legacy = $this->getDataGenerator()->create_user();
+        $teacher = $this->getDataGenerator()->create_user();
+
+        $repository = new company_repository();
+        $companyid = $repository->create((object)[
+            'name' => 'CMC Roles Empresa',
+            'shortname' => 'CMC-ROLES-EMP',
+            'country' => 'PE',
+        ]);
+
+        $repository->add_user($companyid, (int)$student->id, 'student', true);
+        $repository->add_user($companyid, (int)$legacy->id, 'supervisor', true);
+        $repository->add_user($companyid, (int)$teacher->id, 'teacher_external', true);
+
+        $rolesbyuserid = [];
+        foreach ($repository->list_users($companyid) as $user) {
+            $rolesbyuserid[(int)$user->userid] = $user->companyrole;
+        }
+
+        $this->assertEquals(role_repository::ROLE_STUDENT, $rolesbyuserid[(int)$student->id]);
+        $this->assertEquals(role_repository::ROLE_CLIENT_SUPERVISOR, $rolesbyuserid[(int)$legacy->id]);
+        $this->assertEquals(role_repository::ROLE_TEACHER_EXTERNAL, $rolesbyuserid[(int)$teacher->id]);
+        $this->assertEquals(role_repository::ROLE_CLIENT_SUPERVISOR, role_repository::display_key('supervisor'));
     }
 
     /**
@@ -234,6 +268,38 @@ final class repository_test extends advanced_testcase {
         $this->assertEquals((int) $student->id, (int) $rows[0]->userid);
         $this->assertEquals('late', $rows[0]->status);
         $this->assertEquals($timetaken, (int) $rows[0]->timetaken);
+    }
+
+    /**
+     * Program role assignments are idempotent and normalise unsupported roles safely.
+     */
+    public function test_role_repository_assigns_program_roles_idempotently(): void {
+        $this->resetAfterTest(true);
+
+        $teacher = $this->getDataGenerator()->create_user([
+            'firstname' => 'Marie',
+            'lastname' => 'Curie',
+        ]);
+        $programrepository = new program_repository();
+        $programid = $programrepository->create((object)[
+            'name' => 'Programa Docentes',
+            'shortname' => 'DOCENTES',
+            'description' => 'Malla con asignaciones docentes.',
+        ]);
+
+        $repository = new role_repository();
+        $first = $repository->assign_program_role($programid, (int)$teacher->id, 'teacher_internal', true);
+        $second = $repository->assign_program_role($programid, (int)$teacher->id, 'teacher_internal', false);
+        $fallback = $repository->assign_program_role($programid, (int)$teacher->id, 'student', true);
+
+        $rows = $repository->list_program_roles($programid);
+
+        $this->assertEquals($first, $second);
+        $this->assertEquals($first, $fallback);
+        $this->assertCount(1, $rows);
+        $this->assertEquals(role_repository::ROLE_TEACHER_INTERNAL, $rows[0]->cmcrole);
+        $this->assertEquals(1, (int)$rows[0]->active);
+        $this->assertEquals('Marie Curie', fullname($rows[0]));
     }
 
     /**

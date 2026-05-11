@@ -15,6 +15,7 @@ use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 use local_cmc_lms\local\company_repository;
+use local_cmc_lms\local\role_repository;
 
 /**
  * External function returning users associated with a company.
@@ -59,7 +60,7 @@ class get_company_users extends external_api {
                 'fullname' => fullname($user),
                 'email' => $user->email,
                 'username' => $user->username,
-                'companyrole' => $user->companyrole,
+                'companyrole' => role_repository::display_key($user->companyrole),
                 'active' => (bool) $user->active,
             ];
         }, $repository->list_users($params['companyid']));

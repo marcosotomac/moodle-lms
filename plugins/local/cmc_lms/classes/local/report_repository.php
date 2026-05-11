@@ -21,9 +21,6 @@ class report_repository {
     /** @var string Student role in a B2B company context. */
     private const ROLE_STUDENT = 'student';
 
-    /** @var string Supervisor role in a B2B company context. */
-    private const ROLE_SUPERVISOR = 'supervisor';
-
     /**
      * Return one dashboard row per active company.
      *
@@ -48,8 +45,9 @@ class report_repository {
              LEFT JOIN (
                        SELECT cu.companyid,
                               COUNT(DISTINCT cu.userid) AS activeusers,
-                              COUNT(DISTINCT CASE WHEN cu.companyrole = :studentrole THEN cu.userid END) AS students,
-                              COUNT(DISTINCT CASE WHEN cu.companyrole = :supervisorrole THEN cu.userid END) AS supervisors
+                               COUNT(DISTINCT CASE WHEN cu.companyrole = :studentrole THEN cu.userid END) AS students,
+                               COUNT(DISTINCT CASE WHEN cu.companyrole IN (:supervisorrole, :legacysupervisorrole)
+                                                   THEN cu.userid END) AS supervisors
                          FROM {local_cmc_lms_company_user} cu
                          JOIN {user} u ON u.id = cu.userid
                         WHERE cu.active = :activeuser
@@ -98,7 +96,8 @@ class report_repository {
 
         $params = [
             'studentrole' => self::ROLE_STUDENT,
-            'supervisorrole' => self::ROLE_SUPERVISOR,
+            'supervisorrole' => role_repository::ROLE_CLIENT_SUPERVISOR,
+            'legacysupervisorrole' => role_repository::ROLE_LEGACY_SUPERVISOR,
             'activeuser' => 1,
             'activeenrolassociation' => 1,
             'activeenrolment' => 0,
@@ -217,6 +216,7 @@ class report_repository {
         $row->id = (int) $row->id;
         $row->companyid = (int) $row->companyid;
         $row->userid = (int) $row->userid;
+        $row->companyrole = role_repository::display_key($row->companyrole);
         $row->fullname = fullname($row);
         $row->enrolledcourses = (int) $row->enrolledcourses;
         $row->completedcourses = (int) $row->completedcourses;

@@ -121,6 +121,7 @@ class company_repository {
     public function add_user(int $companyid, int $userid, string $companyrole = 'student', bool $active = true): int {
         global $DB;
 
+        $companyrole = role_repository::normalise_company_role($companyrole);
         $now = time();
         $existing = $DB->get_record('local_cmc_lms_company_user', [
             'companyid' => $companyid,

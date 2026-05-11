@@ -66,10 +66,28 @@ Requerimientos atendidos:
 - LMS 5.1: programas, cursos, metadata de módulos/lecciones vía curso Moodle, formatos de contenido, reutilización documentada y versionamiento.
 - LMS 5.2: modalidad asincrónica/sincrónica/mixta, programación, enlaces Zoom/Meet/Teams/BBB/otros y base de asistencia.
 
+## Corte 4 — Roles académicos y acceso CMC
+
+Objetivo: cerrar la base estricta de LMS 5.3 sin reemplazar el modelo nativo de usuarios, autenticación, matrículas y roles de curso de Moodle.
+
+Incluye:
+
+- Modelo centralizado de roles CMC: `coordinator`, `teacher_internal`, `teacher_external`, `student` y `client_supervisor`.
+- Compatibilidad hacia atrás para el valor histórico `supervisor`, normalizado a `client_supervisor` en nuevas escrituras/visualizaciones.
+- Asociación usuario↔empresa ampliada para alumnos, supervisores empresa, docentes internos/externos y coordinadores.
+- Tabla `local_cmc_lms_program_role` para asignar coordinadores/docentes a programas CMC sin duplicar los roles de curso Moodle.
+- UI administrativa y tool MCP `local_cmc_lms_assign_program_role` para asignaciones de roles por programa.
+- Capabilities CMC para gestión de contenido académico, roles de programa, docencia, panel alumno y reportes por empresa.
+
+Decisión del corte: Moodle core sigue manejando creación manual/automática de usuarios, autenticación, roles de curso y permisos dentro del curso. El plugin CMC agrega la capa B2B/programa necesaria para segmentación, reportes, dashboards y flujos académicos propios.
+
+Requerimientos atendidos:
+
+- LMS 5.3: roles mínimos del dominio, asociación a empresas/programas y base de accesos diferenciados.
+
 ## Próximos cortes sugeridos
 
-1. Roles académicos estrictos y control de acceso: coordinador académico, docente interno/externo, alumno y supervisor empresa.
-2. Evaluaciones CMC sobre Moodle Quiz: resultados históricos, criterios de aprobación y reportes.
-3. Certificados automáticos descargables PDF/QR cuando se cumplan criterios de completitud/aprobación.
-4. Panel alumno CMC con cursos activos, progreso, certificados y notificaciones.
-5. Reportes académicos completos con inscritos por curso, evaluaciones, certificados por periodo y exportación.
+1. Evaluaciones CMC sobre Moodle Quiz: resultados históricos, criterios de aprobación y reportes.
+2. Certificados automáticos descargables PDF/QR cuando se cumplan criterios de completitud/aprobación.
+3. Panel alumno CMC con cursos activos, progreso, certificados y notificaciones.
+4. Reportes académicos completos con inscritos por curso, evaluaciones, certificados por periodo y exportación.

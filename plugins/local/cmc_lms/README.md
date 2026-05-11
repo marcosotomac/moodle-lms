@@ -5,12 +5,13 @@
 ## Primer alcance
 
 - Empresas cliente B2B para segmentar alumnos y reportes.
-- Asociación de usuarios Moodle a empresas cliente como alumnos o supervisores.
+- Asociación de usuarios Moodle a empresas cliente con roles CMC (`student`, `client_supervisor`, docentes y coordinadores). El valor histórico `supervisor` se acepta y se muestra como supervisor cliente.
 - Programas/mallas formativas compuestas por cursos Moodle.
 - Asociación ordenada Programa → Cursos.
 - Metadatos estrictos 5.1/5.2 para programas: versión, modalidad (`async`, `sync`, `blended`), resumen de cambios, vigencia, horas planificadas y estado activo.
 - Metadatos estrictos 5.1/5.2 para contenidos vinculados: rol/etiqueta, formato, reutilización, horas, agenda, proveedor/URL de sesión en vivo y bandera de asistencia.
 - Base mínima de asistencia por vínculo Programa → Curso y usuario (`present`, `absent`, `late`, `excused`).
+- Fundación estricta 5.3 de roles/acceso CMC: constantes de negocio, capabilities, y asignaciones coordinador/docente por programa sin reemplazar roles Moodle de curso.
 - UI administrativa en Moodle para gestionar empresas, programas y cursos por programa.
 - Reporte B2B administrativo con resumen por empresa y avance por usuario.
 - Certificados CMC emitidos para usuario+curso con empresa/programa opcionales, código único, token público de verificación y estado emitido/revocado.
@@ -24,6 +25,23 @@
   - `local_cmc_lms_get_company_users`
   - `local_cmc_lms_add_company_user`
   - `local_cmc_lms_enrol_user_in_program`
+  - `local_cmc_lms_assign_program_role`
+
+## Cobertura estricta 5.3 — usuarios, roles y acceso
+
+Moodle core sigue siendo la autoridad para autenticación, creación de usuarios, enrolments y permisos dentro del curso. Este plugin agrega la capa de negocio CMC para B2B/programas:
+
+- Roles CMC centralizados: `coordinator`, `teacher_internal`, `teacher_external`, `student`, `client_supervisor`.
+- Empresas cliente: soportan `student` y `client_supervisor` como roles principales, y también docentes/coordinadores cuando el flujo B2B lo necesita. Entradas legacy `supervisor` se normalizan a `client_supervisor`.
+- Capabilities nuevas sin crear roles Moodle por código:
+  - `local/cmc_lms:manageprogramcontent` para coordinar/gestionar programas y contenido académico.
+  - `local/cmc_lms:manageprogramroles` para asignaciones CMC de docentes/coordinadores.
+  - `local/cmc_lms:teachprograms` como base para ver/dictar programas o cursos asignados.
+  - `local/cmc_lms:viewstudentpanel` como base del panel de alumno.
+  - `local/cmc_lms:viewcompanyreports` como base para reportes acotados por cliente/empresa.
+- Tabla `local_cmc_lms_program_role`: asigna Moodle users a programas CMC con rol `coordinator`, `teacher_internal` o `teacher_external` y bandera activa. Esto complementa Moodle enrolment roles; NO decide permisos dentro del curso.
+
+No se crean usuarios Moodle automáticamente en este slice. La creación manual/automática queda en Moodle core/auth/MCP según la configuración de la plataforma.
 
 ## Certificados CMC
 
@@ -60,6 +78,15 @@ Asocia idempotentemente un usuario Moodle a una empresa cliente y lo matricula m
 - Valida existencia de empresa, programa, usuario activo/no eliminado y rol Moodle por shortname.
 - Retorna `companyassociationid`, ids de entrada y `enrolments[]` con `courseid`, `shortname` y `status` (`enrolled` o `already_enrolled`).
 
+### `local_cmc_lms_assign_program_role`
+
+Asigna idempotentemente un rol CMC de programa (`coordinator`, `teacher_internal`, `teacher_external`) a un usuario Moodle existente.
+
+- Parámetros: `programid`, `userid`, `cmcrole` opcional (`teacher_internal`), `active` opcional (`true`).
+- Requiere contexto sistema y capability `local/cmc_lms:manageprogramroles`.
+- Valida existencia del programa y usuario Moodle activo/no eliminado.
+- No crea enrolments ni roles Moodle de curso; eso sigue separado a propósito.
+
 ## Requerimientos cubiertos inicialmente
 
 - Gestión de programas compuestos y cursos individuales.
@@ -85,6 +112,7 @@ Una vez instalado, las páginas quedan bajo administración del sitio:
 
 - `Site administration → Plugins → CMC LMS domain → Client companies`
 - `Site administration → Plugins → CMC LMS domain → Training programs`
+- `Site administration → Plugins → CMC LMS domain → Program roles`
 - `Site administration → Plugins → CMC LMS domain → Certificates`
 - `Site administration → Plugins → CMC LMS domain → B2B reports`
 
@@ -93,6 +121,7 @@ También se puede acceder directamente en desarrollo:
 ```text
 /local/cmc_lms/companies.php
 /local/cmc_lms/programs.php
+/local/cmc_lms/program_roles.php
 /local/cmc_lms/certificates.php
 /local/cmc_lms/reports.php
 /local/cmc_lms/verify_certificate.php?t=TOKEN_O_CODIGO

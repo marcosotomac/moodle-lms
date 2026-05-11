@@ -51,6 +51,12 @@ class provider implements metadata_provider {
             'timetaken' => 'privacy:metadata:attendance:timetaken',
         ], 'privacy:metadata:attendance');
 
+        $collection->add_database_table('local_cmc_lms_program_role', [
+            'programid' => 'privacy:metadata:program_role:programid',
+            'userid' => 'privacy:metadata:program_role:userid',
+            'cmcrole' => 'privacy:metadata:program_role:cmcrole',
+        ], 'privacy:metadata:program_role');
+
         return $collection;
     }
 }
