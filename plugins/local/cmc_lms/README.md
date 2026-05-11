@@ -9,7 +9,8 @@
 - Programas/mallas formativas compuestas por cursos Moodle.
 - Asociación ordenada Programa → Cursos.
 - UI administrativa en Moodle para gestionar empresas, programas y cursos por programa.
-- Funciones externas read-only listas para exponerse por `webservice_mcp`:
+- Reporte B2B administrativo con resumen por empresa y avance por usuario.
+- Funciones externas read/write listas para exponerse por `webservice_mcp`:
   - `local_cmc_lms_get_companies`
   - `local_cmc_lms_get_programs`
 - Funciones externas write protegidas por capabilities:
@@ -34,6 +35,7 @@ Asocia idempotentemente un usuario Moodle a una empresa cliente y lo matricula m
 - Gestión de programas compuestos y cursos individuales.
 - Asociación de usuarios a empresas cliente.
 - Base para filtro B2B en reportes académicos.
+- Dashboard B2B inicial con métricas de usuarios, matrículas y finalizaciones por empresa.
 - Base para integración MCP/REST sin acoplarse a UI.
 
 ## Instalación local
@@ -52,12 +54,22 @@ Una vez instalado, las páginas quedan bajo administración del sitio:
 
 - `Site administration → Plugins → CMC LMS domain → Client companies`
 - `Site administration → Plugins → CMC LMS domain → Training programs`
+- `Site administration → Plugins → CMC LMS domain → B2B reports`
 
 También se puede acceder directamente en desarrollo:
 
 ```text
 /local/cmc_lms/companies.php
 /local/cmc_lms/programs.php
+/local/cmc_lms/reports.php
 ```
 
 Desde la lista de empresas se puede entrar a **Users** para asociar usuarios Moodle a la empresa cliente.
+
+## Reportes B2B
+
+La página **B2B reports** requiere la capability `local/cmc_lms:viewreports` y muestra únicamente empresas activas.
+
+- Resumen por empresa: usuarios asociados activos, alumnos, supervisores cliente, matrículas en cursos Moodle vinculados a programas CMC, finalizaciones y porcentaje de finalización.
+- Detalle por empresa: usuarios activos asociados, rol en la empresa, cursos CMC matriculados, cursos CMC completados y porcentaje de avance.
+- Las métricas se limitan a cursos presentes en `local_cmc_lms_program_course`; cursos Moodle no vinculados a programas CMC quedan fuera del reporte.

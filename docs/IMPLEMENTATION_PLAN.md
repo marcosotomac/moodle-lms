@@ -17,15 +17,16 @@ Incluye:
 - UI administrativa inicial para gestionar empresas, programas y cursos vinculados.
 - UI/API para asociar usuarios Moodle a empresas cliente con rol de alumno o supervisor.
 - Tool MCP para asociar usuario↔empresa y matricularlo en todos los cursos de un programa.
+- Dashboard/reportes B2B iniciales con resumen por empresa y detalle de avance por usuario.
 
 Requerimientos atendidos:
 
 - LMS 2.1: programas compuestos, cursos y organización de mallas.
 - LMS 2.3: asociación de alumnos a empresas cliente.
-- LMS 2.7: base técnica para reportes por empresa cliente.
+- LMS 2.7: reportes iniciales por empresa cliente, acotados a cursos vinculados a programas CMC.
 - TDR 7: base para sincronización LMS–CRM por cliente/empresa.
 
 ## Próximos cortes sugeridos
 
-1. Dashboard/reportes B2B.
-2. Certificados con código único/QR.
+1. Certificados con código único/QR.
+2. Endurecer reportes B2B con filtros por programa/fechas y exportación CSV si el negocio lo prioriza.
