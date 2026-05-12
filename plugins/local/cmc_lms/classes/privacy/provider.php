@@ -57,6 +57,14 @@ class provider implements metadata_provider {
             'cmcrole' => 'privacy:metadata:program_role:cmcrole',
         ], 'privacy:metadata:program_role');
 
+        $collection->add_database_table('local_cmc_lms_eval_rule', [
+            'programid' => 'privacy:metadata:eval_rule:programid',
+            'courseid' => 'privacy:metadata:eval_rule:courseid',
+            'quizid' => 'privacy:metadata:eval_rule:quizid',
+            'cmid' => 'privacy:metadata:eval_rule:cmid',
+            'scope' => 'privacy:metadata:eval_rule:scope',
+        ], 'privacy:metadata:eval_rule');
+
         return $collection;
     }
 }

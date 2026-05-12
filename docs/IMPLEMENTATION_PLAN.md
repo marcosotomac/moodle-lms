@@ -85,9 +85,26 @@ Requerimientos atendidos:
 
 - LMS 5.3: roles mínimos del dominio, asociación a empresas/programas y base de accesos diferenciados.
 
+## Corte 5 — Evaluaciones CMC sobre Moodle Quiz
+
+Objetivo: cubrir LMS 5.4 de forma estricta sin duplicar el motor de evaluaciones de Moodle.
+
+Incluye:
+
+- Tabla `local_cmc_lms_eval_rule` para vincular programa CMC opcional, curso Moodle, instancia Quiz y course module.
+- Reglas de negocio CMC con alcance `module`/`course`, nota o porcentaje de aprobación, intentos máximos, tiempo límite y bandera activa.
+- Repositorio para listar cuestionarios Moodle disponibles, crear/actualizar reglas idempotentemente y agregar resultados históricos desde `quiz_attempts`/`quiz_grades`.
+- UI administrativa `Evaluations` protegida por `local/cmc_lms:manageevaluations` y `local/cmc_lms:viewevaluationreports`.
+- Tool MCP/read-only `local_cmc_lms_get_evaluation_rules` para listar reglas y resultados agregados de una regla.
+
+Decisión del corte: Moodle Quiz sigue manejando preguntas MCQ/verdadero-falso, intentos, temporización y cálculo de nota final. CMC solo agrega mapeo, umbrales y reporting para control de aprendizaje.
+
+Requerimientos atendidos:
+
+- LMS 5.4: evaluaciones/control del aprendizaje, criterios de aprobación, intentos, tiempos e historial usando Moodle Quiz como fuente de verdad y CMC como capa de trazabilidad/reporting.
+
 ## Próximos cortes sugeridos
 
-1. Evaluaciones CMC sobre Moodle Quiz: resultados históricos, criterios de aprobación y reportes.
-2. Certificados automáticos descargables PDF/QR cuando se cumplan criterios de completitud/aprobación.
-3. Panel alumno CMC con cursos activos, progreso, certificados y notificaciones.
-4. Reportes académicos completos con inscritos por curso, evaluaciones, certificados por periodo y exportación.
+1. Certificados automáticos descargables PDF/QR cuando se cumplan criterios de completitud/aprobación.
+2. Panel alumno CMC con cursos activos, progreso, certificados y notificaciones.
+3. Reportes académicos completos con inscritos por curso, evaluaciones, certificados por periodo y exportación.

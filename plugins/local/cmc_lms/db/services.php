@@ -91,6 +91,14 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/cmc_lms:manageprogramroles',
     ],
+    'local_cmc_lms_get_evaluation_rules' => [
+        'classname' => 'local_cmc_lms\external\get_evaluation_rules',
+        'methodname' => 'execute',
+        'description' => 'Returns CMC evaluation rules mapped to Moodle Quiz and optional historical result summaries.',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'local/cmc_lms:viewevaluationreports',
+    ],
 ];
 
 $services = [
@@ -105,6 +113,7 @@ $services = [
             'local_cmc_lms_add_company_user',
             'local_cmc_lms_enrol_user_in_program',
             'local_cmc_lms_assign_program_role',
+            'local_cmc_lms_get_evaluation_rules',
         ],
         'enabled' => 0,
         'restrictedusers' => 1,

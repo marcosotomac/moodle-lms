@@ -11,6 +11,7 @@ namespace local_cmc_lms;
 use advanced_testcase;
 use local_cmc_lms\local\certificate_repository;
 use local_cmc_lms\local\company_repository;
+use local_cmc_lms\local\evaluation_repository;
 use local_cmc_lms\local\program_repository;
 use local_cmc_lms\local\report_repository;
 use local_cmc_lms\local\role_repository;
@@ -26,6 +27,7 @@ use local_cmc_lms\local\role_repository;
  * @covers     \local_cmc_lms\local\program_repository
  * @covers     \local_cmc_lms\local\report_repository
  * @covers     \local_cmc_lms\local\role_repository
+ * @covers     \local_cmc_lms\local\evaluation_repository
  */
 final class repository_test extends advanced_testcase {
     /**
@@ -300,6 +302,77 @@ final class repository_test extends advanced_testcase {
         $this->assertEquals(role_repository::ROLE_TEACHER_INTERNAL, $rows[0]->cmcrole);
         $this->assertEquals(1, (int)$rows[0]->active);
         $this->assertEquals('Marie Curie', fullname($rows[0]));
+    }
+
+    /**
+     * Evaluation rules map existing Moodle Quiz activities and update idempotently.
+     */
+    public function test_evaluation_repository_saves_and_lists_quiz_rules_idempotently(): void {
+        $this->resetAfterTest(true);
+
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Evaluación 5.4',
+            'shortname' => 'EVAL54',
+        ]);
+        $quiz = $this->getDataGenerator()->create_module('quiz', [
+            'course' => (int)$course->id,
+            'name' => 'Control MCQ',
+            'grade' => 20,
+            'sumgrades' => 20,
+            'attempts' => 3,
+            'timelimit' => 1800,
+        ]);
+        $programrepository = new program_repository();
+        $programid = $programrepository->create((object)[
+            'name' => 'Programa Evaluable',
+            'shortname' => 'EVAL-PROG',
+            'description' => 'Programa con reglas de evaluación.',
+        ]);
+
+        $repository = new evaluation_repository();
+        $activities = $repository->list_quiz_activities((int)$course->id);
+        $this->assertCount(1, $activities);
+        $this->assertEquals((int)$quiz->cmid, (int)$activities[0]->cmid);
+
+        $first = $repository->save_rule((object)[
+            'programid' => $programid,
+            'courseid' => (int)$course->id,
+            'quizid' => (int)$quiz->id,
+            'cmid' => (int)$quiz->cmid,
+            'scope' => evaluation_repository::SCOPE_MODULE,
+            'passgrade' => 14,
+            'passpercentage' => 70,
+            'maxattempts' => 3,
+            'timelimit' => 1800,
+            'active' => 1,
+        ]);
+        $second = $repository->save_rule((object)[
+            'programid' => $programid,
+            'courseid' => (int)$course->id,
+            'quizid' => (int)$quiz->id,
+            'cmid' => (int)$quiz->cmid,
+            'scope' => evaluation_repository::SCOPE_MODULE,
+            'passgrade' => 15,
+            'passpercentage' => 75,
+            'maxattempts' => 2,
+            'timelimit' => 1200,
+            'active' => 0,
+        ]);
+
+        $rules = $repository->list_rules(false);
+
+        $this->assertEquals($first, $second);
+        $this->assertCount(1, $rules);
+        $this->assertEquals($programid, (int)$rules[0]->programid);
+        $this->assertEquals((int)$course->id, (int)$rules[0]->courseid);
+        $this->assertEquals((int)$quiz->id, (int)$rules[0]->quizid);
+        $this->assertEquals((int)$quiz->cmid, (int)$rules[0]->cmid);
+        $this->assertEquals('Control MCQ', $rules[0]->quizname);
+        $this->assertEquals(15.0, (float)$rules[0]->passgrade);
+        $this->assertEquals(75.0, (float)$rules[0]->passpercentage);
+        $this->assertEquals(2, (int)$rules[0]->maxattempts);
+        $this->assertEquals(1200, (int)$rules[0]->timelimit);
+        $this->assertEquals(0, (int)$rules[0]->active);
     }
 
     /**

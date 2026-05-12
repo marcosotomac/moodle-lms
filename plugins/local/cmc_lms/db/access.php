@@ -95,4 +95,18 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+    'local/cmc_lms:manageevaluations' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/cmc_lms:viewevaluationreports' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

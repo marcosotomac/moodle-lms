@@ -12,6 +12,7 @@
 - Metadatos estrictos 5.1/5.2 para contenidos vinculados: rol/etiqueta, formato, reutilización, horas, agenda, proveedor/URL de sesión en vivo y bandera de asistencia.
 - Base mínima de asistencia por vínculo Programa → Curso y usuario (`present`, `absent`, `late`, `excused`).
 - Fundación estricta 5.3 de roles/acceso CMC: constantes de negocio, capabilities, y asignaciones coordinador/docente por programa sin reemplazar roles Moodle de curso.
+- Cobertura estricta 5.4 para evaluaciones/control de aprendizaje mediante mapeo CMC a cuestionarios Moodle existentes, umbrales de aprobación y reporte histórico de intentos/calificaciones.
 - UI administrativa en Moodle para gestionar empresas, programas y cursos por programa.
 - Reporte B2B administrativo con resumen por empresa y avance por usuario.
 - Certificados CMC emitidos para usuario+curso con empresa/programa opcionales, código único, token público de verificación y estado emitido/revocado.
@@ -26,6 +27,24 @@
   - `local_cmc_lms_add_company_user`
   - `local_cmc_lms_enrol_user_in_program`
   - `local_cmc_lms_assign_program_role`
+  - `local_cmc_lms_get_evaluation_rules`
+
+## Cobertura estricta 5.4 — evaluaciones y control del aprendizaje
+
+El plugin **no crea preguntas ni actividades de evaluación propias**. Moodle Quiz sigue siendo la autoridad para:
+
+- Preguntas de opción múltiple y verdadero/falso.
+- Nota, método de calificación, intentos, límite de tiempo e historial de intentos.
+- Tablas core `quiz`, `quiz_attempts` y `quiz_grades`.
+
+CMC agrega la capa de negocio que Moodle core no conoce:
+
+- Tabla `local_cmc_lms_eval_rule` para mapear un programa CMC opcional, curso Moodle, instancia Quiz y course module.
+- Alcance `module` o `course`, nota/porcentaje de aprobación CMC, intentos máximos, límite de tiempo y estado activo.
+- UI administrativa en `/local/cmc_lms/evaluations.php` para elegir cuestionarios existentes, crear/actualizar reglas idempotentes y ver un resumen histórico por alumno.
+- Tool MCP/read-only `local_cmc_lms_get_evaluation_rules` para listar reglas y, opcionalmente, resultados agregados de una regla.
+
+Supuesto de reporte: la nota final se lee de `quiz_grades.grade`, porque Moodle Quiz ya aplicó ahí el método de calificación configurado. Si todavía no hay nota final, el reporte escala defensivamente el mejor intento finalizado (`quiz_attempts.sumgrades`) a la escala `quiz.grade`.
 
 ## Cobertura estricta 5.3 — usuarios, roles y acceso
 
@@ -114,6 +133,7 @@ Una vez instalado, las páginas quedan bajo administración del sitio:
 - `Site administration → Plugins → CMC LMS domain → Training programs`
 - `Site administration → Plugins → CMC LMS domain → Program roles`
 - `Site administration → Plugins → CMC LMS domain → Certificates`
+- `Site administration → Plugins → CMC LMS domain → Evaluations`
 - `Site administration → Plugins → CMC LMS domain → B2B reports`
 
 También se puede acceder directamente en desarrollo:
@@ -123,6 +143,7 @@ También se puede acceder directamente en desarrollo:
 /local/cmc_lms/programs.php
 /local/cmc_lms/program_roles.php
 /local/cmc_lms/certificates.php
+/local/cmc_lms/evaluations.php
 /local/cmc_lms/reports.php
 /local/cmc_lms/verify_certificate.php?t=TOKEN_O_CODIGO
 ```
