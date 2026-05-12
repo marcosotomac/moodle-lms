@@ -123,7 +123,27 @@ Requerimientos atendidos:
 
 - LMS 5.5: certificados automáticos, personalizados con datos del alumno/curso/horas/fecha, descargables en PDF, con código único, QR de validación y registro histórico.
 
+## Corte 7 — Panel alumno y notificaciones CMC
+
+Objetivo: cubrir LMS 5.6 con una experiencia de alumno trazable que reúna avance, certificados y comunicaciones automáticas sin reemplazar Moodle core.
+
+Incluye:
+
+- Repositorio de lectura `student_repository` para cursos CMC activos del alumno, empresa/programa asociado, matrícula, finalización y progreso defensivo.
+- Página `/local/cmc_lms/student.php` para el propio alumno; consulta de terceros limitada a managers o usuarios con `local/cmc_lms:viewstudentpanel`.
+- Tabla `local_cmc_lms_notification` para persistir `course_start`, `inactivity_reminder` y `certificate_available` con estado de envío.
+- Servicio `notification_service` idempotente, integrado con Moodle `message_send()` y providers declarados en `db/messages.php`.
+- Observer de `\core\event\user_enrolment_created` para notificar inicio de curso CMC.
+- Extensión del observer de completitud para notificar certificado disponible cuando se emite automáticamente.
+- Tarea programada diaria de recordatorios por inactividad con umbral simple de 7 días sin acceso reciente al curso, idempotente por usuario+curso+programa+tipo.
+
+Decisión del corte: Moodle sigue siendo fuente de verdad para matrícula, acceso al curso, finalización, módulos y mensajería. CMC agrega un panel consolidado y un log auditable de comunicaciones propias.
+
+Requerimientos atendidos:
+
+- LMS 5.6: panel del estudiante con cursos activos, progreso, certificados y notificaciones automáticas.
+
 ## Próximos cortes sugeridos
 
-1. Panel alumno CMC con cursos activos, progreso, certificados y notificaciones.
-2. Reportes académicos completos con inscritos por curso, evaluaciones, certificados por periodo y exportación.
+1. Reportes académicos completos con inscritos por curso, evaluaciones, certificados por periodo y exportación.
+2. UI/reportes de asistencia y reglas avanzadas de recordatorios configurables por programa.

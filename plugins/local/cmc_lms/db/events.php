@@ -21,4 +21,8 @@ $observers = [
         'eventname' => '\\core\\event\\course_completed',
         'callback' => '\\local_cmc_lms\\observer::course_completed',
     ],
+    [
+        'eventname' => '\\core\\event\\user_enrolment_created',
+        'callback' => '\\local_cmc_lms\\observer::user_enrolment_created',
+    ],
 ];

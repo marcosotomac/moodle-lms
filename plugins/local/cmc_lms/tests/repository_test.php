@@ -12,9 +12,11 @@ use advanced_testcase;
 use local_cmc_lms\local\certificate_repository;
 use local_cmc_lms\local\company_repository;
 use local_cmc_lms\local\evaluation_repository;
+use local_cmc_lms\local\notification_service;
 use local_cmc_lms\local\program_repository;
 use local_cmc_lms\local\report_repository;
 use local_cmc_lms\local\role_repository;
+use local_cmc_lms\local\student_repository;
 
 /**
  * Repository tests for local_cmc_lms.
@@ -28,8 +30,109 @@ use local_cmc_lms\local\role_repository;
  * @covers     \local_cmc_lms\local\report_repository
  * @covers     \local_cmc_lms\local\role_repository
  * @covers     \local_cmc_lms\local\evaluation_repository
+ * @covers     \local_cmc_lms\local\student_repository
+ * @covers     \local_cmc_lms\local\notification_service
  */
 final class repository_test extends advanced_testcase {
+    /**
+     * Student panel repository returns CMC-linked enrolments, completion progress, certificates and notifications.
+     */
+    public function test_student_repository_returns_panel_data(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        $student = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Curso Panel Alumno',
+            'shortname' => 'PANEL-ALUMNO',
+        ]);
+        $this->getDataGenerator()->enrol_user((int)$student->id, (int)$course->id);
+
+        $companyrepository = new company_repository();
+        $companyid = $companyrepository->create((object)[
+            'name' => 'Empresa Panel',
+            'shortname' => 'EMP-PANEL',
+            'country' => 'PE',
+        ]);
+        $companyrepository->add_user($companyid, (int)$student->id, 'student', true);
+
+        $programrepository = new program_repository();
+        $programid = $programrepository->create((object)[
+            'name' => 'Programa Panel',
+            'shortname' => 'PROG-PANEL',
+            'description' => 'Programa para panel alumno.',
+        ]);
+        $programrepository->add_course($programid, (int)$course->id, 1, true);
+
+        $DB->insert_record('course_completions', (object)[
+            'userid' => (int)$student->id,
+            'course' => (int)$course->id,
+            'timecompleted' => time(),
+        ]);
+
+        $certificate = (new certificate_repository())->issue((int)$student->id, (int)$course->id, $companyid, $programid, 0);
+        (new notification_service())->create(
+            (int)$student->id,
+            notification_service::TYPE_COURSE_START,
+            'Inicio de curso',
+            'Mensaje de prueba',
+            ['courseid' => (int)$course->id, 'programid' => $programid],
+            false
+        );
+
+        $repository = new student_repository();
+        $courses = $repository->get_active_courses((int)$student->id);
+        $certificates = $repository->get_certificates((int)$student->id);
+        $notifications = $repository->get_notifications((int)$student->id);
+
+        $this->assertCount(1, $courses);
+        $this->assertEquals((int)$course->id, (int)$courses[0]->courseid);
+        $this->assertEquals('Programa Panel', $courses[0]->programname);
+        $this->assertEquals('Empresa Panel', $courses[0]->companyname);
+        $this->assertEquals(100.0, (float)$courses[0]->progresspercentage);
+
+        $this->assertCount(1, $certificates);
+        $this->assertEquals((int)$certificate->id, (int)$certificates[0]->id);
+        $this->assertStringContainsString('certificate_download.php', $certificates[0]->downloadurl->out(false));
+        $this->assertStringContainsString('verify_certificate.php', $certificates[0]->verificationurl->out(false));
+
+        $this->assertCount(1, $notifications);
+        $this->assertEquals(notification_service::TYPE_COURSE_START, $notifications[0]->type);
+    }
+
+    /**
+     * Notification service logs idempotently without requiring message delivery in PHPUnit.
+     */
+    public function test_notification_service_creates_idempotent_logs(): void {
+        $this->resetAfterTest(true);
+
+        $student = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $service = new notification_service();
+
+        $first = $service->create(
+            (int)$student->id,
+            notification_service::TYPE_INACTIVITY_REMINDER,
+            'Reminder',
+            'Continue your course',
+            ['courseid' => (int)$course->id],
+            false
+        );
+        $second = $service->create(
+            (int)$student->id,
+            notification_service::TYPE_INACTIVITY_REMINDER,
+            'Reminder changed',
+            'This should not duplicate',
+            ['courseid' => (int)$course->id],
+            false
+        );
+
+        $this->assertEquals((int)$first->id, (int)$second->id);
+        $this->assertEquals(notification_service::STATUS_PENDING, $first->status);
+        $this->assertCount(1, $service->list_for_user((int)$student->id));
+    }
+
     /**
      * Certificates are idempotent per active user/course/company/program tuple and publicly verifiable.
      */

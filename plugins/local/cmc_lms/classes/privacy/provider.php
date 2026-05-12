@@ -70,6 +70,19 @@ class provider implements metadata_provider {
             'scope' => 'privacy:metadata:eval_rule:scope',
         ], 'privacy:metadata:eval_rule');
 
+        $collection->add_database_table('local_cmc_lms_notification', [
+            'userid' => 'privacy:metadata:notification:userid',
+            'type' => 'privacy:metadata:notification:type',
+            'courseid' => 'privacy:metadata:notification:courseid',
+            'programid' => 'privacy:metadata:notification:programid',
+            'certificateid' => 'privacy:metadata:notification:certificateid',
+            'subject' => 'privacy:metadata:notification:subject',
+            'message' => 'privacy:metadata:notification:message',
+            'timecreated' => 'privacy:metadata:notification:timecreated',
+            'timesent' => 'privacy:metadata:notification:timesent',
+            'status' => 'privacy:metadata:notification:status',
+        ], 'privacy:metadata:notification');
+
         return $collection;
     }
 }

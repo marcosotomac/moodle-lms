@@ -16,6 +16,7 @@
 - UI administrativa en Moodle para gestionar empresas, programas y cursos por programa.
 - Reporte B2B administrativo con resumen por empresa y avance por usuario.
 - Cobertura estricta 5.5 para certificados CMC personalizados: emisión manual/automática por finalización Moodle, PDF descargable con QR de verificación, código único, token público, historial de generación y estado emitido/revocado.
+- Cobertura estricta 5.6 para experiencia del alumno: panel CMC con cursos activos, avance defensivo, certificados descargables/verificables y notificaciones persistidas/enviadas vía mensajería Moodle.
 - Funciones externas read/write listas para exponerse por `webservice_mcp`:
   - `local_cmc_lms_get_companies`
   - `local_cmc_lms_get_programs`
@@ -76,6 +77,19 @@ Los certificados priorizan trazabilidad, personalización y verificación públi
 - Wordmark local reemplazable en `pix/cmc-logo.svg`. Si TCPDF no puede renderizar el SVG, se usa texto CMC como fallback.
 
 Límite operativo: la emisión automática depende de que la finalización de curso de Moodle esté configurada y dispare `\core\event\course_completed`. Sin completion tracking activo, la emisión queda disponible por vía manual/API de repositorio pero no automática.
+
+## Cobertura estricta 5.6 — Panel alumno y notificaciones
+
+La experiencia de alumno CMC se implementa como capa de lectura y notificación sin duplicar la navegación ni las actividades Moodle:
+
+- Página autenticada `/local/cmc_lms/student.php` para el propio alumno. Managers o usuarios con `local/cmc_lms:viewstudentpanel` pueden agregar `?userid=ID` para ver otro alumno.
+- Cursos activos: solo matrículas activas en cursos vinculados a programas CMC activos. Muestra curso, programa, empresa activa si existe, estado de matrícula, estado de finalización y porcentaje de avance.
+- Avance defensivo: si Moodle marca el curso como completado, CMC muestra 100%; si no, usa módulos con completion tracking y cuenta finalizaciones de `course_modules_completion`; si no hay módulos trazables, muestra 0%.
+- Certificados: lista certificados emitidos del alumno con descarga PDF autenticada y URL pública de verificación.
+- Notificaciones: tabla `local_cmc_lms_notification` para `course_start`, `inactivity_reminder` y `certificate_available`, con log idempotente y entrega opcional por `message_send()` mediante providers en `db/messages.php`.
+- Automatismos: observer de `\core\event\user_enrolment_created` para inicio de curso CMC, observer existente de `\core\event\course_completed` extendido para avisar certificado disponible, y tarea programada diaria `\local_cmc_lms\task\send_inactivity_reminders`.
+
+Límite operativo: el recordatorio de inactividad usa un umbral simple documentado de 7 días sin `user_lastaccess` reciente en el curso y es idempotente por usuario+curso+programa+tipo para evitar spam diario.
 
 ## Cobertura estricta 5.1/5.2 — Slice 1
 
@@ -139,6 +153,7 @@ Una vez instalado, las páginas quedan bajo administración del sitio:
 - `Site administration → Plugins → CMC LMS domain → Program roles`
 - `Site administration → Plugins → CMC LMS domain → Certificates`
 - `Site administration → Plugins → CMC LMS domain → Evaluations`
+- `Site administration → Plugins → CMC LMS domain → CMC student panel` (solo usuarios con capability para ver otros paneles)
 - `Site administration → Plugins → CMC LMS domain → B2B reports`
 
 También se puede acceder directamente en desarrollo:
@@ -150,6 +165,8 @@ También se puede acceder directamente en desarrollo:
 /local/cmc_lms/certificates.php
 /local/cmc_lms/certificate_download.php?certid=ID
 /local/cmc_lms/evaluations.php
+/local/cmc_lms/student.php
+/local/cmc_lms/student.php?userid=ID
 /local/cmc_lms/reports.php
 /local/cmc_lms/verify_certificate.php?t=TOKEN_O_CODIGO
 ```

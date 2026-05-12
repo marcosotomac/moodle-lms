@@ -7,7 +7,7 @@
 // (at your option) any later version.
 
 /**
- * Version metadata for the CMC LMS domain plugin.
+ * Scheduled tasks for local_cmc_lms.
  *
  * @package    local_cmc_lms
  * @copyright  2026 CMC & Soluciones en Gestión Humana
@@ -16,8 +16,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026051111;
-$plugin->requires = 2026041000;
-$plugin->component = 'local_cmc_lms';
-$plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.5.6';
+$tasks = [
+    [
+        'classname' => '\local_cmc_lms\task\send_inactivity_reminders',
+        'blocking' => 0,
+        'minute' => 'R',
+        'hour' => '2',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*',
+    ],
+];

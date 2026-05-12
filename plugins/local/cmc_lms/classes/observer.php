@@ -9,7 +9,9 @@
 namespace local_cmc_lms;
 
 use core\event\course_completed;
+use core\event\user_enrolment_created;
 use local_cmc_lms\local\certificate_repository;
+use local_cmc_lms\local\notification_service;
 use Throwable;
 
 /**
@@ -39,9 +41,34 @@ class observer {
             }
 
             $repository = new certificate_repository();
-            $repository->issue_for_completion($userid, $courseid, (int)$event->timecreated, 0);
+            $certificates = $repository->issue_for_completion($userid, $courseid, (int)$event->timecreated, 0);
+            $notificationservice = new notification_service();
+            foreach ($certificates as $certificate) {
+                $notificationservice->notify_certificate_available($certificate);
+            }
         } catch (Throwable $exception) {
             debugging('CMC certificate automatic issuance skipped: ' . $exception->getMessage(), DEBUG_DEVELOPER);
+        }
+    }
+
+    /**
+     * Send/log CMC course start notifications for new enrolments into linked courses.
+     *
+     * @param user_enrolment_created $event Moodle enrolment event.
+     * @return void
+     */
+    public static function user_enrolment_created(user_enrolment_created $event): void {
+        try {
+            $data = $event->get_data();
+            $userid = (int)($data['relateduserid'] ?? $data['userid'] ?? 0);
+            $courseid = (int)($data['courseid'] ?? 0);
+            if ($userid <= 0 || $courseid <= 0) {
+                return;
+            }
+
+            (new notification_service())->notify_course_start($userid, $courseid);
+        } catch (Throwable $exception) {
+            debugging('CMC course start notification skipped: ' . $exception->getMessage(), DEBUG_DEVELOPER);
         }
     }
 }

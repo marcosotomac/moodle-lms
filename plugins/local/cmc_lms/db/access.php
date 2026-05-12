@@ -67,7 +67,9 @@ $capabilities = [
     'local/cmc_lms:viewstudentpanel' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => [],
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
     ],
     'local/cmc_lms:viewcompanyreports' => [
         'captype' => 'read',

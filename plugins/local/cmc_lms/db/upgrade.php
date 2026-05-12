@@ -203,5 +203,34 @@ function xmldb_local_cmc_lms_upgrade($oldversion): bool {
         upgrade_plugin_savepoint(true, 2026051110, 'local', 'cmc_lms');
     }
 
+    if ($oldversion < 2026051111) {
+        $table = new xmldb_table('local_cmc_lms_notification');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('type', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('programid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('certificateid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('subject', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('message', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timesent', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('status', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'pending');
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, ['userid']);
+        $table->add_index('type_user_course', XMLDB_INDEX_NOTUNIQUE, ['type', 'userid', 'courseid']);
+        $table->add_index('programid', XMLDB_INDEX_NOTUNIQUE, ['programid']);
+        $table->add_index('certificateid', XMLDB_INDEX_NOTUNIQUE, ['certificateid']);
+        $table->add_index('status', XMLDB_INDEX_NOTUNIQUE, ['status']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026051111, 'local', 'cmc_lms');
+    }
+
     return true;
 }
