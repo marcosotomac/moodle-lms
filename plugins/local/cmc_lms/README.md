@@ -9,8 +9,9 @@
 - Programas/mallas formativas compuestas por cursos Moodle.
 - Asociación ordenada Programa → Cursos.
 - Metadatos estrictos 5.1/5.2 para programas: versión, modalidad (`async`, `sync`, `blended`), resumen de cambios, vigencia, horas planificadas y estado activo.
-- Metadatos estrictos 5.1/5.2 para contenidos vinculados: rol/etiqueta, formato, reutilización, horas, agenda, proveedor/URL de sesión en vivo y bandera de asistencia.
+- Metadatos estrictos 5.1/5.2 para contenidos vinculados: rol/etiqueta, formato, reutilización, horas, agenda, proveedor/URL de sesión en vivo, creación vía API Zoom/Google Meet y bandera de asistencia.
 - Base mínima de asistencia por vínculo Programa → Curso y usuario (`present`, `absent`, `late`, `excused`) con UI administrativa para registrar asistencia de alumnos matriculados.
+- Integración real con proveedores síncronos: Zoom Server-to-Server OAuth y Google Meet REST API para crear sesiones y guardar URLs generadas.
 - Fundación estricta 5.3 de roles/acceso CMC: constantes de negocio, capabilities, y asignaciones coordinador/docente por programa sin reemplazar roles Moodle de curso.
 - Cobertura estricta 5.4 para evaluaciones/control de aprendizaje mediante mapeo CMC a cuestionarios Moodle existentes, umbrales de aprobación y reporte histórico de intentos/calificaciones.
 - UI administrativa en Moodle para gestionar empresas, programas y cursos por programa.
@@ -110,6 +111,7 @@ Este plugin **no duplica** el modelo académico nativo de Moodle. Cursos, seccio
 
 - `local_cmc_lms_program`: versionado de programa, modalidad, notas de cambio, vigencia y horas planificadas.
 - `local_cmc_lms_program_course`: metadatos de rol/formato del contenido, trazabilidad de reutilización, horas planificadas, agenda, proveedor/URL de sesión sincrónica y activación de asistencia.
+- `local_cmc_lms_program_course`: además persiste `liveexternalid`, `liveintegrationstatus` y `liveintegrationerror` para auditar creación vía API.
 - `local_cmc_lms_attendance`: asistencia por vínculo programa-curso y usuario, con página administrativa para registrar presentes, ausentes, tarde o justificados sobre alumnos matriculados activos.
 
 La cobertura 5.1/5.2 de este slice es deliberadamente honesta: CMC estructura, versiona y agenda la oferta; Moodle core entrega el contenido real, actividades, lecciones, cuestionarios y recursos.
@@ -118,7 +120,18 @@ La cobertura 5.1/5.2 de este slice es deliberadamente honesta: CMC estructura, v
 
 1. ✅ Slice 1: metadatos/versionado de programas, modalidad, agenda y enlaces sincrónicos para contenidos, más tabla/repositorio de asistencia inicial.
 2. ✅ Slice 2: UI mínima de asistencia para sesiones programa-curso con alumnos matriculados activos e historial.
-3. 🔲 Próximo slice: indicadores de cobertura por programa usando actividades, lecciones y cuestionarios de Moodle core.
+3. ✅ Slice 3: integración real Zoom/Google Meet API para crear sesiones en vivo desde la vinculación programa-curso.
+4. 🔲 Próximo slice: indicadores de cobertura por programa usando actividades, lecciones y cuestionarios de Moodle core.
+
+### Integraciones Zoom / Google Meet
+
+La configuración se realiza en **Site administration → Plugins → CMC LMS domain → Integrations**.
+
+- Zoom usa Server-to-Server OAuth y crea reuniones programadas bajo el usuario configurado.
+- Google Meet usa Google Meet REST API `spaces.create` con OAuth JWT de cuenta de servicio y delegación de dominio cuando corresponda.
+- Al vincular un curso a un programa, el coordinador selecciona `Zoom` o `Google Meet` y marca **Create live session through provider API**. Si la API responde correctamente, CMC guarda la URL generada en `liveurl`; si falla, conserva el vínculo y registra el error en metadata de integración.
+
+Ver `docs/LIVE_SESSION_INTEGRATIONS.md` para setup y seguridad.
 
 ### `local_cmc_lms_enrol_user_in_program`
 

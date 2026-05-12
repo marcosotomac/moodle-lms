@@ -30,6 +30,85 @@ $capabilities = [
 
 if ($hassiteconfig || has_any_capability($capabilities, context_system::instance())) {
     $ADMIN->add('localplugins', new admin_category('local_cmc_lms', get_string('pluginname', 'local_cmc_lms')));
+
+    if ($hassiteconfig) {
+        $settings = new admin_settingpage('local_cmc_lms_integrations', get_string('integrations', 'local_cmc_lms'));
+        $settings->add(new admin_setting_heading(
+            'local_cmc_lms/zoomintegration',
+            get_string('zoomintegration', 'local_cmc_lms'),
+            get_string('zoomintegration_desc', 'local_cmc_lms')
+        ));
+        $settings->add(new admin_setting_configcheckbox(
+            'local_cmc_lms/zoom_enabled',
+            get_string('zoomenabled', 'local_cmc_lms'),
+            get_string('zoomenabled_desc', 'local_cmc_lms'),
+            0
+        ));
+        $settings->add(new admin_setting_configtext(
+            'local_cmc_lms/zoom_accountid',
+            get_string('zoomaccountid', 'local_cmc_lms'),
+            get_string('zoomaccountid_desc', 'local_cmc_lms'),
+            '',
+            PARAM_TEXT
+        ));
+        $settings->add(new admin_setting_configtext(
+            'local_cmc_lms/zoom_clientid',
+            get_string('zoomclientid', 'local_cmc_lms'),
+            get_string('zoomclientid_desc', 'local_cmc_lms'),
+            '',
+            PARAM_TEXT
+        ));
+        $settings->add(new admin_setting_configpasswordunmask(
+            'local_cmc_lms/zoom_clientsecret',
+            get_string('zoomclientsecret', 'local_cmc_lms'),
+            get_string('zoomclientsecret_desc', 'local_cmc_lms'),
+            ''
+        ));
+        $settings->add(new admin_setting_configtext(
+            'local_cmc_lms/zoom_userid',
+            get_string('zoomuserid', 'local_cmc_lms'),
+            get_string('zoomuserid_desc', 'local_cmc_lms'),
+            'me',
+            PARAM_TEXT
+        ));
+
+        $settings->add(new admin_setting_heading(
+            'local_cmc_lms/googlemeetintegration',
+            get_string('googlemeetintegration', 'local_cmc_lms'),
+            get_string('googlemeetintegration_desc', 'local_cmc_lms')
+        ));
+        $settings->add(new admin_setting_configcheckbox(
+            'local_cmc_lms/google_meet_enabled',
+            get_string('googlemeetenabled', 'local_cmc_lms'),
+            get_string('googlemeetenabled_desc', 'local_cmc_lms'),
+            0
+        ));
+        $settings->add(new admin_setting_configtext(
+            'local_cmc_lms/google_meet_service_account',
+            get_string('googlemeetserviceaccount', 'local_cmc_lms'),
+            get_string('googlemeetserviceaccount_desc', 'local_cmc_lms'),
+            '',
+            PARAM_EMAIL
+        ));
+        $settings->add(new admin_setting_configtextarea(
+            'local_cmc_lms/google_meet_private_key',
+            get_string('googlemeetprivatekey', 'local_cmc_lms'),
+            get_string('googlemeetprivatekey_desc', 'local_cmc_lms'),
+            '',
+            PARAM_RAW,
+            80,
+            8
+        ));
+        $settings->add(new admin_setting_configtext(
+            'local_cmc_lms/google_meet_subject',
+            get_string('googlemeetsubject', 'local_cmc_lms'),
+            get_string('googlemeetsubject_desc', 'local_cmc_lms'),
+            '',
+            PARAM_EMAIL
+        ));
+        $ADMIN->add('local_cmc_lms', $settings);
+    }
+
     $ADMIN->add(
         'local_cmc_lms',
         new admin_externalpage(

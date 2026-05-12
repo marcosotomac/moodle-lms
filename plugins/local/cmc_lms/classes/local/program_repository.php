@@ -36,6 +36,9 @@ class program_repository {
     /** @var string[] Supported live session providers. */
     public const LIVE_PROVIDERS = ['', 'zoom', 'meet', 'teams', 'bbb', 'other'];
 
+    /** @var string[] Supported live session integration statuses. */
+    public const LIVE_INTEGRATION_STATUSES = ['manual', 'created', 'error', 'skipped'];
+
     /** @var string[] Supported attendance statuses. */
     public const ATTENDANCE_STATUSES = ['present', 'absent', 'late', 'excused'];
 
@@ -153,6 +156,13 @@ class program_repository {
             'scheduleend' => (int)($metadata->scheduleend ?? 0),
             'liveprovider' => $this->normalise_choice($metadata->liveprovider ?? '', self::LIVE_PROVIDERS, ''),
             'liveurl' => $metadata->liveurl ?? '',
+            'liveexternalid' => $metadata->liveexternalid ?? '',
+            'liveintegrationstatus' => $this->normalise_choice(
+                $metadata->liveintegrationstatus ?? 'manual',
+                self::LIVE_INTEGRATION_STATUSES,
+                'manual'
+            ),
+            'liveintegrationerror' => $metadata->liveintegrationerror ?? '',
             'attendancetracking' => empty($metadata->attendancetracking) ? 0 : 1,
             'timecreated' => time(),
         ];
@@ -182,6 +192,9 @@ class program_repository {
                        pc.scheduleend,
                        pc.liveprovider,
                        pc.liveurl,
+                       pc.liveexternalid,
+                       pc.liveintegrationstatus,
+                       pc.liveintegrationerror,
                        pc.attendancetracking,
                        c.fullname,
                        c.shortname,
@@ -210,6 +223,9 @@ class program_repository {
                        pc.scheduleend,
                        pc.liveprovider,
                        pc.liveurl,
+                       pc.liveexternalid,
+                       pc.liveintegrationstatus,
+                       pc.liveintegrationerror,
                        pc.attendancetracking,
                        p.name AS programname,
                        p.shortname AS programshortname,
@@ -245,6 +261,9 @@ class program_repository {
                        pc.scheduleend,
                        pc.liveprovider,
                        pc.liveurl,
+                       pc.liveexternalid,
+                       pc.liveintegrationstatus,
+                       pc.liveintegrationerror,
                        pc.attendancetracking,
                        p.name AS programname,
                        p.shortname AS programshortname,
@@ -256,6 +275,41 @@ class program_repository {
                  WHERE pc.id = :programcourseid";
 
         return $DB->get_record_sql($sql, ['programcourseid' => $programcourseid], MUST_EXIST);
+    }
+
+    /**
+     * Update live-session integration metadata for a program-course link.
+     *
+     * @param int $programcourseid Program-course link id.
+     * @param string $status Integration status.
+     * @param string|null $liveurl Join URL, when created by provider.
+     * @param string|null $externalid Provider resource id.
+     * @param string|null $error Last integration error.
+     * @return void
+     */
+    public function update_live_session_metadata(
+        int $programcourseid,
+        string $status,
+        ?string $liveurl = null,
+        ?string $externalid = null,
+        ?string $error = null
+    ): void {
+        global $DB;
+
+        $record = (object)[
+            'id' => $programcourseid,
+            'liveintegrationstatus' => $this->normalise_choice($status, self::LIVE_INTEGRATION_STATUSES, 'manual'),
+            'liveintegrationerror' => $error ?? '',
+        ];
+
+        if ($liveurl !== null) {
+            $record->liveurl = $liveurl;
+        }
+        if ($externalid !== null) {
+            $record->liveexternalid = $externalid;
+        }
+
+        $DB->update_record(self::PROGRAM_COURSE_TABLE, $record);
     }
 
     /**

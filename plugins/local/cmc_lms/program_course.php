@@ -18,6 +18,7 @@ require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 use local_cmc_lms\form\program_course_form;
+use local_cmc_lms\local\live_session_service;
 use local_cmc_lms\local\program_repository;
 
 $programid = required_param('programid', PARAM_INT);
@@ -48,7 +49,36 @@ if ($mform->is_cancelled()) {
 }
 
 if ($data = $mform->get_data()) {
-    $repository->add_course((int)$data->programid, (int)$data->courseid, (int)$data->sortorder, !empty($data->required), $data);
+    $programcourseid = $repository->add_course(
+        (int)$data->programid,
+        (int)$data->courseid,
+        (int)$data->sortorder,
+        !empty($data->required),
+        $data
+    );
+
+    if (!empty($data->createlivesession)) {
+        $course = $DB->get_record('course', ['id' => (int)$data->courseid], 'id, fullname, shortname', MUST_EXIST);
+        try {
+            $result = (new live_session_service())->create_session($program, $course, $data);
+            $repository->update_live_session_metadata($programcourseid, 'created', $result->joinurl, $result->externalid, null);
+            redirect(
+                $returnurl,
+                get_string('livesessioncreated', 'local_cmc_lms', $result->joinurl),
+                null,
+                \core\output\notification::NOTIFY_SUCCESS
+            );
+        } catch (Throwable $exception) {
+            $repository->update_live_session_metadata($programcourseid, 'error', null, null, $exception->getMessage());
+            redirect(
+                $returnurl,
+                get_string('livesessioncreationfailed', 'local_cmc_lms', $exception->getMessage()),
+                null,
+                \core\output\notification::NOTIFY_ERROR
+            );
+        }
+    }
+
     redirect($returnurl, get_string('saved', 'local_cmc_lms'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 

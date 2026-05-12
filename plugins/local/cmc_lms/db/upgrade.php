@@ -230,5 +230,22 @@ function xmldb_local_cmc_lms_upgrade($oldversion): bool {
         upgrade_plugin_savepoint(true, 2026051111, 'local', 'cmc_lms');
     }
 
+    if ($oldversion < 2026051115) {
+        $table = new xmldb_table('local_cmc_lms_program_course');
+        $fields = [
+            new xmldb_field('liveexternalid', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'liveurl'),
+            new xmldb_field('liveintegrationstatus', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'manual', 'liveexternalid'),
+            new xmldb_field('liveintegrationerror', XMLDB_TYPE_TEXT, null, null, null, null, null, 'liveintegrationstatus'),
+        ];
+
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026051115, 'local', 'cmc_lms');
+    }
+
     return true;
 }

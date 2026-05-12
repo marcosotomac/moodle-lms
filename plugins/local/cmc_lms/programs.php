@@ -69,6 +69,17 @@ foreach ($programs as $program) {
         if (!empty($course->schedulestart)) {
             $metadata[] = userdate($course->schedulestart, get_string('strftimedatetimeshort', 'langconfig'));
         }
+        if (!empty($course->liveprovider)) {
+            $status = $course->liveintegrationstatus ?? 'manual';
+            $statuskey = 'liveintegrationstatus' . $status;
+            $statuslabel = get_string_manager()->string_exists($statuskey, 'local_cmc_lms')
+                ? get_string($statuskey, 'local_cmc_lms')
+                : s($status);
+            $metadata[] = s($course->liveprovider) . ': ' . $statuslabel;
+        }
+        if (!empty($course->liveurl)) {
+            $metadata[] = html_writer::link($course->liveurl, get_string('liveurl', 'local_cmc_lms'));
+        }
         $courses[] = s($course->fullname) . ' (' . s($course->shortname) . ')' . (empty($metadata) ? '' : ' — ' . implode(' · ', $metadata));
     }
 

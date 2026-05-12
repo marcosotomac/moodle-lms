@@ -13,6 +13,7 @@ use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
+use local_cmc_lms\local\live_session_service;
 use local_cmc_lms\local\program_repository;
 
 /**
@@ -42,6 +43,7 @@ class add_program_course extends external_api {
             'scheduleend' => new external_value(PARAM_INT, 'Scheduled end timestamp.', VALUE_DEFAULT, 0),
             'liveprovider' => new external_value(PARAM_TEXT, 'Live session provider.', VALUE_DEFAULT, ''),
             'liveurl' => new external_value(PARAM_TEXT, 'Live session URL.', VALUE_DEFAULT, ''),
+            'createlivesession' => new external_value(PARAM_BOOL, 'Whether to create the live session via provider API.', VALUE_DEFAULT, false),
             'attendancetracking' => new external_value(PARAM_BOOL, 'Whether attendance tracking is enabled.', VALUE_DEFAULT, false),
         ]);
     }
@@ -68,6 +70,7 @@ class add_program_course extends external_api {
         int $scheduleend = 0,
         string $liveprovider = '',
         string $liveurl = '',
+        bool $createlivesession = false,
         bool $attendancetracking = false
     ): array {
         global $DB;
@@ -85,6 +88,7 @@ class add_program_course extends external_api {
             'scheduleend' => $scheduleend,
             'liveprovider' => $liveprovider,
             'liveurl' => $liveurl,
+            'createlivesession' => $createlivesession,
             'attendancetracking' => $attendancetracking,
         ]);
 
@@ -96,9 +100,17 @@ class add_program_course extends external_api {
             && $params['scheduleend'] < $params['schedulestart']) {
             throw new \invalid_parameter_exception(get_string('scheduleendbeforestart', 'local_cmc_lms'));
         }
+        if (!empty($params['createlivesession'])) {
+            if (!in_array($params['liveprovider'], ['zoom', 'meet'], true)) {
+                throw new \invalid_parameter_exception(get_string('invalidliveintegrationprovider', 'local_cmc_lms'));
+            }
+            if (empty($params['schedulestart']) || empty($params['scheduleend'])) {
+                throw new \invalid_parameter_exception(get_string('livesessionrequiresdates', 'local_cmc_lms'));
+            }
+        }
 
-        $DB->get_record('local_cmc_lms_program', ['id' => $params['programid']], '*', MUST_EXIST);
-        $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
+        $program = $DB->get_record('local_cmc_lms_program', ['id' => $params['programid']], '*', MUST_EXIST);
+        $moodlecourse = $DB->get_record('course', ['id' => $params['courseid']], 'id, fullname, shortname', MUST_EXIST);
 
         $repository = new program_repository();
         $id = $repository->add_course(
@@ -108,6 +120,15 @@ class add_program_course extends external_api {
             $params['required'],
             (object) $params
         );
+        if (!empty($params['createlivesession'])) {
+            try {
+                $result = (new live_session_service())->create_session($program, $moodlecourse, (object)$params);
+                $repository->update_live_session_metadata($id, 'created', $result->joinurl, $result->externalid, null);
+            } catch (\Throwable $exception) {
+                $repository->update_live_session_metadata($id, 'error', null, null, $exception->getMessage());
+            }
+        }
+
         $courses = $repository->get_courses($params['programid']);
         $course = null;
         foreach ($courses as $candidate) {
@@ -131,6 +152,9 @@ class add_program_course extends external_api {
             'scheduleend' => (int)$course->scheduleend,
             'liveprovider' => $course->liveprovider,
             'liveurl' => $course->liveurl,
+            'liveexternalid' => $course->liveexternalid,
+            'liveintegrationstatus' => $course->liveintegrationstatus,
+            'liveintegrationerror' => $course->liveintegrationerror,
             'attendancetracking' => (bool)$course->attendancetracking,
         ];
     }
@@ -155,6 +179,9 @@ class add_program_course extends external_api {
             'scheduleend' => new external_value(PARAM_INT, 'Scheduled end timestamp.'),
             'liveprovider' => new external_value(PARAM_TEXT, 'Live session provider.'),
             'liveurl' => new external_value(PARAM_TEXT, 'Live session URL.'),
+            'liveexternalid' => new external_value(PARAM_TEXT, 'External provider session id.'),
+            'liveintegrationstatus' => new external_value(PARAM_TEXT, 'Live session integration status.'),
+            'liveintegrationerror' => new external_value(PARAM_TEXT, 'Live session integration error.'),
             'attendancetracking' => new external_value(PARAM_BOOL, 'Whether attendance tracking is enabled.'),
         ]);
     }

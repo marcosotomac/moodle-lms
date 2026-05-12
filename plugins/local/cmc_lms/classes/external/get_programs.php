@@ -80,6 +80,9 @@ class get_programs extends external_api {
                         'scheduleend' => (int)($course->scheduleend ?? 0),
                         'liveprovider' => $course->liveprovider ?? '',
                         'liveurl' => $course->liveurl ?? '',
+                        'liveexternalid' => $course->liveexternalid ?? '',
+                        'liveintegrationstatus' => $course->liveintegrationstatus ?? 'manual',
+                        'liveintegrationerror' => $course->liveintegrationerror ?? '',
                         'attendancetracking' => (bool)($course->attendancetracking ?? false),
                         'visible' => (bool) $course->visible,
                     ];
@@ -121,6 +124,9 @@ class get_programs extends external_api {
                         'scheduleend' => new external_value(PARAM_INT, 'Scheduled end timestamp.'),
                         'liveprovider' => new external_value(PARAM_TEXT, 'Live session provider.'),
                         'liveurl' => new external_value(PARAM_TEXT, 'Live session URL.'),
+                        'liveexternalid' => new external_value(PARAM_TEXT, 'External provider session id.'),
+                        'liveintegrationstatus' => new external_value(PARAM_TEXT, 'Live session integration status.'),
+                        'liveintegrationerror' => new external_value(PARAM_TEXT, 'Live session integration error.'),
                         'attendancetracking' => new external_value(PARAM_BOOL, 'Whether attendance tracking is enabled.'),
                         'visible' => new external_value(PARAM_BOOL, 'Whether this Moodle course is visible.'),
                     ])

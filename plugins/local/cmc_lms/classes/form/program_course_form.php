@@ -101,6 +101,9 @@ class program_course_form extends moodleform {
         $mform->addElement('text', 'liveurl', get_string('liveurl', 'local_cmc_lms'), ['size' => 60]);
         $mform->setType('liveurl', PARAM_URL);
 
+        $mform->addElement('advcheckbox', 'createlivesession', get_string('createlivesession', 'local_cmc_lms'));
+        $mform->addHelpButton('createlivesession', 'createlivesession', 'local_cmc_lms');
+
         $mform->addElement('advcheckbox', 'attendancetracking', get_string('attendancetracking', 'local_cmc_lms'));
 
         $this->add_action_buttons();
@@ -125,6 +128,14 @@ class program_course_form extends moodleform {
         }
         if (!empty($data['schedulestart']) && !empty($data['scheduleend']) && $data['scheduleend'] < $data['schedulestart']) {
             $errors['scheduleend'] = get_string('scheduleendbeforestart', 'local_cmc_lms');
+        }
+        if (!empty($data['createlivesession'])) {
+            if (empty($data['liveprovider']) || !in_array($data['liveprovider'], ['zoom', 'meet'], true)) {
+                $errors['liveprovider'] = get_string('invalidliveintegrationprovider', 'local_cmc_lms');
+            }
+            if (empty($data['schedulestart']) || empty($data['scheduleend'])) {
+                $errors['schedulestart'] = get_string('livesessionrequiresdates', 'local_cmc_lms');
+            }
         }
 
         return $errors;

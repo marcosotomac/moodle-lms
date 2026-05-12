@@ -172,7 +172,7 @@ Incluye:
 - Registro masivo de estados `present`, `absent`, `late` y `excused` con fecha/hora aplicable.
 - Historial de asistencia por sesión programa-curso.
 
-Decisión del corte: CMC registra la evidencia de asistencia del contexto B2B/programa, pero Moodle core conserva la autoridad sobre usuarios, matrículas y cursos. La integración API nativa Zoom/Meet sigue fuera de alcance; por ahora se conserva metadata `liveprovider`/`liveurl` y registro manual.
+Decisión del corte: CMC registra la evidencia de asistencia del contexto B2B/programa, pero Moodle core conserva la autoridad sobre usuarios, matrículas y cursos. La integración API nativa Zoom/Meet se implementa en un corte posterior; por ahora se conserva metadata `liveprovider`/`liveurl` y registro manual.
 
 Requerimientos atendidos:
 
@@ -195,6 +195,25 @@ Decisión del corte: Moodle theme sigue siendo la base responsive de navegación
 Requerimientos atendidos:
 
 - LMS 5.6: diseño responsive validado para pantallas CMC.
+
+## Corte 11 — Integración real Zoom / Google Meet API 5.2
+
+Objetivo: reemplazar el uso puramente manual de enlaces síncronos por creación real de sesiones vía API de proveedor cuando el coordinador vincula un curso a una malla CMC.
+
+Incluye:
+
+- Settings administrativos bajo `CMC LMS domain → Integrations` para credenciales Zoom y Google Meet sin commitear secretos.
+- Cliente Zoom Server-to-Server OAuth para obtener access token y crear reuniones programadas.
+- Cliente Google Meet REST API `spaces.create` con JWT OAuth de cuenta de servicio y soporte de domain-wide delegation.
+- Checkbox `Create live session through provider API` en el formulario de vínculo Programa → Curso.
+- Persistencia de `liveurl`, `liveexternalid`, `liveintegrationstatus` y `liveintegrationerror` en `local_cmc_lms_program_course`.
+- Documentación operativa en `docs/LIVE_SESSION_INTEGRATIONS.md`.
+
+Decisión del corte: la plataforma crea la sesión y guarda la URL del proveedor, pero no persiste credenciales en código ni incluye SDKs externos. Moodle/CMC sigue manejando programa, curso, fechas y asistencia; Zoom/Meet manejan la sala síncrona.
+
+Requerimientos atendidos:
+
+- LMS 5.2: integración real con Zoom / Google Meet para formación síncrona.
 
 ## Próximos cortes sugeridos
 
