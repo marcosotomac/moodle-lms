@@ -15,7 +15,7 @@
 - Cobertura estricta 5.4 para evaluaciones/control de aprendizaje mediante mapeo CMC a cuestionarios Moodle existentes, umbrales de aprobación y reporte histórico de intentos/calificaciones.
 - UI administrativa en Moodle para gestionar empresas, programas y cursos por programa.
 - Reporte B2B administrativo con resumen por empresa y avance por usuario.
-- Certificados CMC emitidos para usuario+curso con empresa/programa opcionales, código único, token público de verificación y estado emitido/revocado.
+- Cobertura estricta 5.5 para certificados CMC personalizados: emisión manual/automática por finalización Moodle, PDF descargable con QR de verificación, código único, token público, historial de generación y estado emitido/revocado.
 - Funciones externas read/write listas para exponerse por `webservice_mcp`:
   - `local_cmc_lms_get_companies`
   - `local_cmc_lms_get_programs`
@@ -62,15 +62,20 @@ Moodle core sigue siendo la autoridad para autenticación, creación de usuarios
 
 No se crean usuarios Moodle automáticamente en este slice. La creación manual/automática queda en Moodle core/auth/MCP según la configuración de la plataforma.
 
-## Certificados CMC
+## Cobertura estricta 5.5 — Certificados CMC
 
-El primer corte de certificados prioriza trazabilidad y verificación pública sin agregar dependencias externas:
+Los certificados priorizan trazabilidad, personalización y verificación pública sin agregar dependencias externas:
 
-- Tabla `local_cmc_lms_cert` con usuario Moodle, curso Moodle, empresa/programa CMC opcionales, código legible único, token de verificación, emisor, fecha de emisión y metadatos de revocación.
+- Tabla `local_cmc_lms_cert` con usuario Moodle, curso Moodle, empresa/programa CMC opcionales, código legible único, token de verificación, emisor, fecha de emisión, título personalizado, horas, fecha de finalización, estado de generación PDF y metadatos de revocación.
 - Emisión idempotente para el mismo usuario+curso+empresa+programa mientras el certificado siga en estado `issued`.
+- Emisión automática mediante observer de `\core\event\course_completed` cuando el curso pertenece a una malla CMC (`local_cmc_lms_program_course`). Si el alumno tiene asociaciones activas a empresas CMC, la emisión queda asociada a esas empresas; si no, se emite con empresa nula y programa asociado.
 - Administración capability-gated bajo `local/cmc_lms:viewcertificates` y `local/cmc_lms:issuecertificates`.
 - Verificación pública sin login en `/local/cmc_lms/verify_certificate.php?t=TOKEN_O_CODIGO`.
-- Payload QR: la URL pública de verificación. Este corte no genera imagen QR para evitar dependencias externas; se muestra la URL/payload listo para codificar.
+- Descarga autenticada en `/local/cmc_lms/certificate_download.php?certid=ID`: managers con `local/cmc_lms:viewcertificates` pueden descargar cualquiera; el dueño puede descargar sus certificados emitidos. Certificados revocados no se descargan como válidos.
+- PDF generado con Moodle core `pdflib.php`/TCPDF e imagen QR vía `write2DBarcode()`. El QR contiene la URL pública de verificación.
+- Wordmark local reemplazable en `pix/cmc-logo.svg`. Si TCPDF no puede renderizar el SVG, se usa texto CMC como fallback.
+
+Límite operativo: la emisión automática depende de que la finalización de curso de Moodle esté configurada y dispare `\core\event\course_completed`. Sin completion tracking activo, la emisión queda disponible por vía manual/API de repositorio pero no automática.
 
 ## Cobertura estricta 5.1/5.2 — Slice 1
 
@@ -143,6 +148,7 @@ También se puede acceder directamente en desarrollo:
 /local/cmc_lms/programs.php
 /local/cmc_lms/program_roles.php
 /local/cmc_lms/certificates.php
+/local/cmc_lms/certificate_download.php?certid=ID
 /local/cmc_lms/evaluations.php
 /local/cmc_lms/reports.php
 /local/cmc_lms/verify_certificate.php?t=TOKEN_O_CODIGO

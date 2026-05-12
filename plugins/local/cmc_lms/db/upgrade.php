@@ -175,5 +175,33 @@ function xmldb_local_cmc_lms_upgrade($oldversion): bool {
         upgrade_plugin_savepoint(true, 2026051109, 'local', 'cmc_lms');
     }
 
+    if ($oldversion < 2026051110) {
+        $table = new xmldb_table('local_cmc_lms_cert');
+        $fields = [
+            new xmldb_field('certificatetitle', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, 'Certificado CMC', 'issuerid'),
+            new xmldb_field('coursehours', XMLDB_TYPE_NUMBER, '10, 2', null, XMLDB_NOTNULL, null, '0', 'certificatetitle'),
+            new xmldb_field('completiontime', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'coursehours'),
+            new xmldb_field('pdfgenerated', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'completiontime'),
+            new xmldb_field('timegenerated', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'pdfgenerated'),
+        ];
+
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        $DB->execute("UPDATE {local_cmc_lms_cert}
+                          SET certificatetitle = :title
+                        WHERE certificatetitle IS NULL OR certificatetitle = ''", [
+            'title' => 'Certificado CMC',
+        ]);
+        $DB->execute("UPDATE {local_cmc_lms_cert}
+                         SET completiontime = timeissued
+                       WHERE completiontime = 0 OR completiontime IS NULL");
+
+        upgrade_plugin_savepoint(true, 2026051110, 'local', 'cmc_lms');
+    }
+
     return true;
 }

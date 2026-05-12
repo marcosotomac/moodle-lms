@@ -58,6 +58,9 @@ $table->data = [
     [get_string('course'), format_string($certificate->coursefullname) . ' (' . s($certificate->courseshortname) . ')'],
     [get_string('program', 'local_cmc_lms'), $certificate->programname ? format_string($certificate->programname) : get_string('none')],
     [get_string('company', 'local_cmc_lms'), $certificate->companyname ? format_string($certificate->companyname) : get_string('none')],
+    [get_string('certificatetitle', 'local_cmc_lms'), s($certificate->certificatetitle)],
+    [get_string('coursehours', 'local_cmc_lms'), (float)$certificate->coursehours > 0 ? format_float((float)$certificate->coursehours, 2) : get_string('none')],
+    [get_string('completiondate', 'local_cmc_lms'), !empty($certificate->completiontime) ? userdate($certificate->completiontime) : get_string('none')],
     [get_string('issueddate', 'local_cmc_lms'), userdate($certificate->timeissued)],
 ];
 

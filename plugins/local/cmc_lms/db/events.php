@@ -7,7 +7,7 @@
 // (at your option) any later version.
 
 /**
- * Version metadata for the CMC LMS domain plugin.
+ * Event observers for local_cmc_lms.
  *
  * @package    local_cmc_lms
  * @copyright  2026 CMC & Soluciones en Gestión Humana
@@ -16,8 +16,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026051110;
-$plugin->requires = 2026041000;
-$plugin->component = 'local_cmc_lms';
-$plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.5.5';
+$observers = [
+    [
+        'eventname' => '\\core\\event\\course_completed',
+        'callback' => '\\local_cmc_lms\\observer::course_completed',
+    ],
+];

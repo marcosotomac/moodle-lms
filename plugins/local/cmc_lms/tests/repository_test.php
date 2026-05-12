@@ -61,7 +61,12 @@ final class repository_test extends advanced_testcase {
         ]);
 
         $repository = new certificate_repository();
-        $first = $repository->issue((int) $student->id, (int) $course->id, $companyid, $programid, (int) $issuer->id);
+        $completiontime = 1778457600;
+        $first = $repository->issue((int) $student->id, (int) $course->id, $companyid, $programid, (int) $issuer->id, (object)[
+            'certificatetitle' => 'Certificado personalizado CMC',
+            'coursehours' => 12.5,
+            'completiontime' => $completiontime,
+        ]);
         $second = $repository->issue((int) $student->id, (int) $course->id, $companyid, $programid, (int) $issuer->id);
 
         $this->assertEquals((int) $first->id, (int) $second->id);
@@ -72,6 +77,9 @@ final class repository_test extends advanced_testcase {
         $this->assertNotNull($verified);
         $this->assertEquals('Grace Hopper', $verified->userfullname);
         $this->assertEquals('Gestión de Calidad', $verified->coursefullname);
+        $this->assertEquals('Certificado personalizado CMC', $verified->certificatetitle);
+        $this->assertEquals(12.5, (float)$verified->coursehours);
+        $this->assertEquals($completiontime, (int)$verified->completiontime);
         $this->assertEquals(certificate_repository::STATUS_ISSUED, $verified->status);
 
         $bycode = $repository->get_for_verification($first->code);
@@ -82,6 +90,50 @@ final class repository_test extends advanced_testcase {
         $revoked = $repository->get_for_verification($first->verifytoken);
         $this->assertEquals(certificate_repository::STATUS_REVOKED, $revoked->status);
         $this->assertEquals('Test revocation', $revoked->revocationreason);
+    }
+
+    /**
+     * Automatic certificate issuance uses CMC program-course links and active company associations idempotently.
+     */
+    public function test_certificate_repository_issues_for_course_completion_context(): void {
+        $this->resetAfterTest(true);
+
+        $student = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Curso con Certificado Automático',
+            'shortname' => 'CERT-AUTO',
+        ]);
+        $companyrepository = new company_repository();
+        $companyid = $companyrepository->create((object)[
+            'name' => 'Empresa Certificable',
+            'shortname' => 'EMP-CERT',
+            'country' => 'PE',
+        ]);
+        $companyrepository->add_user($companyid, (int)$student->id, 'student', true);
+
+        $programrepository = new program_repository();
+        $programid = $programrepository->create((object)[
+            'name' => 'Programa con Certificado',
+            'shortname' => 'PROG-CERT',
+            'description' => 'Programa con emisión automática.',
+        ]);
+        $programrepository->add_course($programid, (int)$course->id, 1, true, (object)[
+            'plannedhours' => 8.5,
+        ]);
+
+        $completiontime = 1778544000;
+        $repository = new certificate_repository();
+        $first = $repository->issue_for_completion((int)$student->id, (int)$course->id, $completiontime);
+        $second = $repository->issue_for_completion((int)$student->id, (int)$course->id, $completiontime);
+
+        $this->assertCount(1, $first);
+        $this->assertCount(1, $second);
+        $this->assertEquals((int)$first[0]->id, (int)$second[0]->id);
+        $this->assertEquals($companyid, (int)$first[0]->companyid);
+        $this->assertEquals($programid, (int)$first[0]->programid);
+        $this->assertEquals(8.5, (float)$first[0]->coursehours);
+        $this->assertEquals($completiontime, (int)$first[0]->completiontime);
+        $this->assertStringContainsString('Curso con Certificado Automático', $first[0]->certificatetitle);
     }
 
     /**

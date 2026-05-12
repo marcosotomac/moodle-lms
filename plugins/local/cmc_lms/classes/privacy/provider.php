@@ -41,6 +41,11 @@ class provider implements metadata_provider {
             'verifytoken' => 'privacy:metadata:cert:verifytoken',
             'timeissued' => 'privacy:metadata:cert:timeissued',
             'issuerid' => 'privacy:metadata:cert:issuerid',
+            'certificatetitle' => 'privacy:metadata:cert:certificatetitle',
+            'coursehours' => 'privacy:metadata:cert:coursehours',
+            'completiontime' => 'privacy:metadata:cert:completiontime',
+            'pdfgenerated' => 'privacy:metadata:cert:pdfgenerated',
+            'timegenerated' => 'privacy:metadata:cert:timegenerated',
             'status' => 'privacy:metadata:cert:status',
         ], 'privacy:metadata:cert');
 

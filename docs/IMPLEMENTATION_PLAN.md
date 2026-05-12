@@ -103,8 +103,27 @@ Requerimientos atendidos:
 
 - LMS 5.4: evaluaciones/control del aprendizaje, criterios de aprobación, intentos, tiempos e historial usando Moodle Quiz como fuente de verdad y CMC como capa de trazabilidad/reporting.
 
+## Corte 6 — Certificados automáticos PDF/QR
+
+Objetivo: cerrar LMS 5.5 con certificados personalizados, descargables y verificables, emitidos automáticamente desde completitud Moodle.
+
+Incluye:
+
+- Metadata de certificado para título, horas del curso, fecha de completitud, marca de generación PDF y fecha de generación.
+- Observador Moodle `\core\event\course_completed` para emitir certificados automáticamente cuando un curso completado pertenece a una malla CMC.
+- Emisión por programa y empresa activa cuando hay asociación B2B; emisión por programa sin empresa cuando no hay asociación activa.
+- Generador PDF con Moodle core `pdflib.php`/TCPDF, sin dependencias externas.
+- QR renderizado en PDF con `write2DBarcode` apuntando a la URL pública de verificación.
+- Endpoint `certificate_download.php` para descarga del PDF por administradores o por el alumno propietario.
+- Wordmark local reemplazable `pix/cmc-logo.svg` como fallback hasta contar con el logo oficial CMC.
+
+Decisión del corte: Moodle core sigue siendo la fuente de verdad para completitud. La emisión automática depende de que los cursos tengan criterios de finalización configurados correctamente; si la aprobación de un Quiz forma parte de la completitud del curso, el certificado queda condicionado por esa aprobación.
+
+Requerimientos atendidos:
+
+- LMS 5.5: certificados automáticos, personalizados con datos del alumno/curso/horas/fecha, descargables en PDF, con código único, QR de validación y registro histórico.
+
 ## Próximos cortes sugeridos
 
-1. Certificados automáticos descargables PDF/QR cuando se cumplan criterios de completitud/aprobación.
-2. Panel alumno CMC con cursos activos, progreso, certificados y notificaciones.
-3. Reportes académicos completos con inscritos por curso, evaluaciones, certificados por periodo y exportación.
+1. Panel alumno CMC con cursos activos, progreso, certificados y notificaciones.
+2. Reportes académicos completos con inscritos por curso, evaluaciones, certificados por periodo y exportación.

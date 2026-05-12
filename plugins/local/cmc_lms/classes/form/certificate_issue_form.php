@@ -52,6 +52,15 @@ class certificate_issue_form extends moodleform {
         $mform->addElement('select', 'programid', get_string('program', 'local_cmc_lms'), $programs);
         $mform->setType('programid', PARAM_INT);
 
+        $mform->addElement('text', 'certificatetitle', get_string('certificatetitle', 'local_cmc_lms'), ['size' => 50]);
+        $mform->setType('certificatetitle', PARAM_TEXT);
+
+        $mform->addElement('text', 'coursehours', get_string('coursehours', 'local_cmc_lms'), ['size' => 8]);
+        $mform->setType('coursehours', PARAM_FLOAT);
+
+        $mform->addElement('date_selector', 'completiontime', get_string('completiondate', 'local_cmc_lms'), ['optional' => true]);
+        $mform->setType('completiontime', PARAM_INT);
+
         $this->add_action_buttons(false, get_string('issuecertificate', 'local_cmc_lms'));
     }
 
@@ -81,6 +90,10 @@ class certificate_issue_form extends moodleform {
 
         if (!empty($data['programid']) && !$DB->record_exists('local_cmc_lms_program', ['id' => $data['programid']])) {
             $errors['programid'] = get_string('invalidprogram', 'local_cmc_lms');
+        }
+
+        if (isset($data['coursehours']) && (float)$data['coursehours'] < 0) {
+            $errors['coursehours'] = get_string('invalidnegativevalue', 'local_cmc_lms');
         }
 
         return $errors;

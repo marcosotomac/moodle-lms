@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="120" viewBox="0 0 360 120" role="img" aria-labelledby="title desc">
+  <title id="title">CMC logo placeholder</title>
+  <desc id="desc">Replaceable CMC wordmark fallback for certificates.</desc>
+  <rect width="360" height="120" rx="18" fill="#0f3769"/>
+  <text x="32" y="72" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="700" fill="#ffffff">CMC</text>
+  <text x="170" y="48" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#ffffff">Soluciones en</text>
+  <text x="170" y="76" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#ffffff">Gestión Humana</text>
+</svg>

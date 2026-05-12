@@ -9,6 +9,7 @@
 namespace local_cmc_lms\local;
 
 use coding_exception;
+use core_text;
 use dml_exception;
 use moodle_url;
 use stdClass;
@@ -40,15 +41,24 @@ class certificate_repository {
      * @param int $courseid Moodle course id.
      * @param int|null $companyid Optional CMC company id.
      * @param int|null $programid Optional CMC program id.
-     * @param int $issuerid Moodle user id issuing the certificate.
+     * @param int $issuerid Moodle user id issuing the certificate. Use 0 for automatic system issuance.
+     * @param stdClass|null $metadata Optional personalized certificate rendering metadata.
      * @return stdClass Certificate record enriched with joined display data.
      * @throws dml_exception
      */
-    public function issue(int $userid, int $courseid, ?int $companyid, ?int $programid, int $issuerid): stdClass {
+    public function issue(
+        int $userid,
+        int $courseid,
+        ?int $companyid,
+        ?int $programid,
+        int $issuerid,
+        ?stdClass $metadata = null
+    ): stdClass {
         global $DB;
 
         $companyid = $companyid ?: null;
         $programid = $programid ?: null;
+        $metadata = $metadata ?? new stdClass();
 
         $existing = $this->get_existing_issued($userid, $courseid, $companyid, $programid);
         if ($existing !== null) {
@@ -67,6 +77,11 @@ class certificate_repository {
                 'verifytoken' => $this->generate_token(),
                 'timeissued' => $now,
                 'issuerid' => $issuerid,
+                'certificatetitle' => $this->normalise_title($metadata->certificatetitle ?? null),
+                'coursehours' => $this->normalise_hours($metadata->coursehours ?? 0),
+                'completiontime' => (int)($metadata->completiontime ?? $now),
+                'pdfgenerated' => 0,
+                'timegenerated' => null,
                 'status' => self::STATUS_ISSUED,
                 'timerevoked' => null,
                 'revokerid' => null,
@@ -88,6 +103,84 @@ class certificate_repository {
     }
 
     /**
+     * Automatically issue certificates for a Moodle course completion when the course belongs to CMC programs.
+     *
+     * One certificate is issued per CMC program-course mapping and active company association. If the user has no active
+     * company association, a program-scoped certificate with a null company is issued. Existing issued certificates are
+     * returned without duplication.
+     *
+     * @param int $userid Moodle user id that completed the course.
+     * @param int $courseid Moodle course id completed.
+     * @param int|null $completiontime Completion timestamp; defaults to now.
+     * @param int $issuerid Moodle user id for issuer, 0 for system issuance.
+     * @return stdClass[] Issued or existing certificate records.
+     */
+    public function issue_for_completion(
+        int $userid,
+        int $courseid,
+        ?int $completiontime = null,
+        int $issuerid = 0
+    ): array {
+        global $DB;
+
+        $completiontime = $completiontime ?: time();
+        $sql = "SELECT pc.id,
+                       pc.programid,
+                       pc.courseid,
+                       pc.plannedhours AS coursehours,
+                       p.name AS programname,
+                       p.active,
+                       c.fullname AS coursefullname
+                  FROM {local_cmc_lms_program_course} pc
+                  JOIN {local_cmc_lms_program} p ON p.id = pc.programid
+                  JOIN {course} c ON c.id = pc.courseid
+                 WHERE pc.courseid = :courseid
+                   AND p.active = 1
+              ORDER BY p.name ASC, pc.id ASC";
+        $mappings = $DB->get_records_sql($sql, ['courseid' => $courseid]);
+        if (empty($mappings)) {
+            return [];
+        }
+
+        $companies = $DB->get_records_sql(
+            "SELECT DISTINCT cu.companyid
+               FROM {local_cmc_lms_company_user} cu
+               JOIN {local_cmc_lms_company} c ON c.id = cu.companyid
+              WHERE cu.userid = :userid
+                AND cu.active = :active
+                AND c.active = :activecompany
+           ORDER BY cu.companyid ASC",
+            ['userid' => $userid, 'active' => 1, 'activecompany' => 1]
+        );
+        $companyids = array_map(static fn($record): int => (int)$record->companyid, array_values($companies));
+        $companyids = array_values(array_unique(array_filter($companyids)));
+        if (empty($companyids)) {
+            $companyids = [null];
+        }
+
+        $certificates = [];
+        foreach ($mappings as $mapping) {
+            $metadata = (object) [
+                'certificatetitle' => get_string('defaultcertificatetitle', 'local_cmc_lms', $mapping->coursefullname),
+                'coursehours' => (float)$mapping->coursehours,
+                'completiontime' => $completiontime,
+            ];
+            foreach ($companyids as $companyid) {
+                $certificates[] = $this->issue(
+                    $userid,
+                    $courseid,
+                    $companyid,
+                    (int)$mapping->programid,
+                    $issuerid,
+                    $metadata
+                );
+            }
+        }
+
+        return $certificates;
+    }
+
+    /**
      * List recent certificates with joined Moodle and CMC display data.
      *
      * @param int $limit Maximum rows to return.
@@ -106,6 +199,11 @@ class certificate_repository {
                        cert.verifytoken,
                        cert.timeissued,
                        cert.issuerid,
+                       cert.certificatetitle,
+                       cert.coursehours,
+                       cert.completiontime,
+                       cert.pdfgenerated,
+                       cert.timegenerated,
                        cert.status,
                        cert.timerevoked,
                        cert.revokerid,
@@ -145,6 +243,11 @@ class certificate_repository {
                        cert.verifytoken,
                        cert.timeissued,
                        cert.issuerid,
+                       cert.certificatetitle,
+                       cert.coursehours,
+                       cert.completiontime,
+                       cert.pdfgenerated,
+                       cert.timegenerated,
                        cert.status,
                        cert.timerevoked,
                        cert.revokerid,
@@ -184,6 +287,11 @@ class certificate_repository {
                        cert.verifytoken,
                        cert.timeissued,
                        cert.issuerid,
+                       cert.certificatetitle,
+                       cert.coursehours,
+                       cert.completiontime,
+                       cert.pdfgenerated,
+                       cert.timegenerated,
                        cert.status,
                        cert.timerevoked,
                        cert.revokerid,
@@ -236,6 +344,23 @@ class certificate_repository {
      */
     public function get_verification_url(stdClass $certificate): moodle_url {
         return new moodle_url('/local/cmc_lms/verify_certificate.php', ['t' => $certificate->verifytoken]);
+    }
+
+    /**
+     * Mark that a certificate PDF was generated/downloaded.
+     *
+     * @param int $certificateid Certificate id.
+     * @return void
+     */
+    public function mark_pdf_generated(int $certificateid): void {
+        global $DB;
+
+        $record = $DB->get_record(self::TABLE, ['id' => $certificateid], 'id, pdfgenerated, timegenerated, timemodified', MUST_EXIST);
+        $now = time();
+        $record->pdfgenerated = 1;
+        $record->timegenerated = $now;
+        $record->timemodified = $now;
+        $DB->update_record(self::TABLE, $record);
     }
 
     /**
@@ -300,5 +425,26 @@ class certificate_repository {
      */
     private function generate_token(): string {
         return hash('sha256', random_bytes(32));
+    }
+
+    /**
+     * Normalise a personalized certificate title.
+     *
+     * @param string|null $title Candidate title.
+     * @return string
+     */
+    private function normalise_title(?string $title): string {
+        $title = trim((string)$title);
+        return $title === '' ? get_string('defaultcertificateheading', 'local_cmc_lms') : core_text::substr($title, 0, 255);
+    }
+
+    /**
+     * Normalise certificate hours to a non-negative decimal.
+     *
+     * @param mixed $hours Candidate hours.
+     * @return float
+     */
+    private function normalise_hours($hours): float {
+        return max(0, (float)$hours);
     }
 }

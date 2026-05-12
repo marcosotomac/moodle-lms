@@ -48,7 +48,12 @@ if (has_capability('local/cmc_lms:issuecertificates', $context)) {
             (int) $data->courseid,
             empty($data->companyid) ? null : (int) $data->companyid,
             empty($data->programid) ? null : (int) $data->programid,
-            (int) $USER->id
+            (int) $USER->id,
+            (object) [
+                'certificatetitle' => $data->certificatetitle ?? '',
+                'coursehours' => $data->coursehours ?? 0,
+                'completiontime' => empty($data->completiontime) ? time() : (int)$data->completiontime,
+            ]
         );
     }
 }
@@ -104,6 +109,12 @@ foreach ($certificates as $certificate) {
                 'sesskey' => sesskey(),
             ]),
             get_string('revoke', 'local_cmc_lms')
+        );
+    }
+    if ($certificate->status === certificate_repository::STATUS_ISSUED) {
+        $actions[] = html_writer::link(
+            new moodle_url('/local/cmc_lms/certificate_download.php', ['certid' => $certificate->id]),
+            get_string('certificatedownload', 'local_cmc_lms')
         );
     }
 
