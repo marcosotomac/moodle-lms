@@ -178,6 +178,24 @@ Requerimientos atendidos:
 
 - LMS 5.2: registro operativo de asistencia en sesiones en vivo planificadas.
 
+## Corte 10 — Responsive validado 5.6
+
+Objetivo: cerrar el punto responsive de LMS 5.6 con una capa CSS propia del plugin y una matriz de validación documentada.
+
+Incluye:
+
+- Hoja `plugins/local/cmc_lms/styles.css` acotada a páginas CMC.
+- Tablas CMC con scroll horizontal local bajo 768px para evitar overflow del layout.
+- Formularios Moodle del plugin apilados en móvil para mejorar legibilidad.
+- Wrapping defensivo para URLs, emails, códigos de certificado y nombres largos.
+- Matriz de validación en `docs/RESPONSIVE_VALIDATION.md` con breakpoints 375, 768, 1024 y 1440 px.
+
+Decisión del corte: Moodle theme sigue siendo la base responsive de navegación/layout; CMC añade reglas específicas para sus tablas, formularios y contenido largo sin reemplazar el theme ni romper semántica Moodle.
+
+Requerimientos atendidos:
+
+- LMS 5.6: diseño responsive validado para pantallas CMC.
+
 ## Próximos cortes sugeridos
 
 1. Filtros por periodo/programa/empresa y exportación CSV/XLSX de reportes 5.7.

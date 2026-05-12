@@ -1,0 +1,141 @@
+/**
+ * Responsive refinements for local_cmc_lms pages.
+ *
+ * Moodle themes provide the primary responsive grid. These scoped rules make
+ * plugin-specific tables, forms and action controls safe on narrow screens.
+ */
+
+body.path-local-cmc_lms,
+body[id^="page-local-cmc_lms-"] {
+    --local-cmc-lms-border-soft: rgba(0, 0, 0, .08);
+    --local-cmc-lms-surface-soft: rgba(0, 0, 0, .025);
+}
+
+body.path-local-cmc_lms .generaltable,
+body[id^="page-local-cmc_lms-"] .generaltable {
+    max-width: 100%;
+}
+
+body.path-local-cmc_lms .generaltable th,
+body.path-local-cmc_lms .generaltable td,
+body[id^="page-local-cmc_lms-"] .generaltable th,
+body[id^="page-local-cmc_lms-"] .generaltable td {
+    vertical-align: top;
+    overflow-wrap: anywhere;
+}
+
+body.path-local-cmc_lms .generaltable a,
+body[id^="page-local-cmc_lms-"] .generaltable a {
+    overflow-wrap: anywhere;
+}
+
+body.path-local-cmc_lms .mform fieldset,
+body[id^="page-local-cmc_lms-"] .mform fieldset {
+    min-width: 0;
+}
+
+body.path-local-cmc_lms .mform input[type="text"],
+body.path-local-cmc_lms .mform input[type="url"],
+body.path-local-cmc_lms .mform input[type="email"],
+body.path-local-cmc_lms .mform input[type="password"],
+body.path-local-cmc_lms .mform select,
+body.path-local-cmc_lms .mform textarea,
+body[id^="page-local-cmc_lms-"] .mform input[type="text"],
+body[id^="page-local-cmc_lms-"] .mform input[type="url"],
+body[id^="page-local-cmc_lms-"] .mform input[type="email"],
+body[id^="page-local-cmc_lms-"] .mform input[type="password"],
+body[id^="page-local-cmc_lms-"] .mform select,
+body[id^="page-local-cmc_lms-"] .mform textarea {
+    max-width: 100%;
+}
+
+body.path-local-cmc_lms .singlebutton,
+body[id^="page-local-cmc_lms-"] .singlebutton {
+    max-width: 100%;
+}
+
+@media (max-width: 767.98px) {
+    body.path-local-cmc_lms .generaltable,
+    body[id^="page-local-cmc_lms-"] .generaltable {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--local-cmc-lms-border-soft);
+        border-radius: .5rem;
+    }
+
+    body.path-local-cmc_lms .generaltable th,
+    body.path-local-cmc_lms .generaltable td,
+    body[id^="page-local-cmc_lms-"] .generaltable th,
+    body[id^="page-local-cmc_lms-"] .generaltable td {
+        min-width: 8rem;
+    }
+
+    body.path-local-cmc_lms .mform .fitem,
+    body[id^="page-local-cmc_lms-"] .mform .fitem {
+        display: flex;
+        flex-direction: column;
+        gap: .25rem;
+        align-items: stretch;
+    }
+
+    body.path-local-cmc_lms .mform .fitemtitle,
+    body.path-local-cmc_lms .mform .felement,
+    body[id^="page-local-cmc_lms-"] .mform .fitemtitle,
+    body[id^="page-local-cmc_lms-"] .mform .felement {
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0;
+        padding-left: 0;
+        text-align: left;
+    }
+
+    body.path-local-cmc_lms .mform .form-inline,
+    body[id^="page-local-cmc_lms-"] .mform .form-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    body.path-local-cmc_lms .mform input[type="text"],
+    body.path-local-cmc_lms .mform input[type="url"],
+    body.path-local-cmc_lms .mform input[type="email"],
+    body.path-local-cmc_lms .mform input[type="password"],
+    body.path-local-cmc_lms .mform select,
+    body.path-local-cmc_lms .mform textarea,
+    body[id^="page-local-cmc_lms-"] .mform input[type="text"],
+    body[id^="page-local-cmc_lms-"] .mform input[type="url"],
+    body[id^="page-local-cmc_lms-"] .mform input[type="email"],
+    body[id^="page-local-cmc_lms-"] .mform input[type="password"],
+    body[id^="page-local-cmc_lms-"] .mform select,
+    body[id^="page-local-cmc_lms-"] .mform textarea {
+        width: 100%;
+    }
+
+    body.path-local-cmc_lms .singlebutton input[type="submit"],
+    body[id^="page-local-cmc_lms-"] .singlebutton input[type="submit"] {
+        width: 100%;
+        margin-bottom: .5rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    body.path-local-cmc_lms .generaltable,
+    body[id^="page-local-cmc_lms-"] .generaltable {
+        font-size: .875rem;
+    }
+
+    body.path-local-cmc_lms .box,
+    body[id^="page-local-cmc_lms-"] .box {
+        padding-left: .75rem;
+        padding-right: .75rem;
+    }
+
+    body.path-local-cmc_lms .mform .fcontainer,
+    body[id^="page-local-cmc_lms-"] .mform .fcontainer {
+        background: var(--local-cmc-lms-surface-soft);
+        border-radius: .5rem;
+        padding: .75rem;
+    }
+}

@@ -16,7 +16,7 @@
 - UI administrativa en Moodle para gestionar empresas, programas y cursos por programa.
 - Reporte B2B administrativo con resumen por empresa y avance por usuario.
 - Cobertura estricta 5.5 para certificados CMC personalizados: emisión manual/automática por finalización Moodle, PDF descargable con QR de verificación, código único, token público, historial de generación y estado emitido/revocado.
-- Cobertura estricta 5.6 para experiencia del alumno: panel CMC con cursos activos, avance defensivo, certificados descargables/verificables y notificaciones persistidas/enviadas vía mensajería Moodle.
+- Cobertura estricta 5.6 para experiencia del alumno: panel CMC con cursos activos, avance defensivo, certificados descargables/verificables, notificaciones persistidas/enviadas vía mensajería Moodle y responsive validado para pantallas CMC.
 - Cobertura estricta 5.7 para reportes académicos mínimos: inscritos por curso, tasa de finalización, resumen de resultados de evaluación, certificados emitidos/revocados y actividad por empresa cliente.
 - Funciones externas read/write listas para exponerse por `webservice_mcp`:
   - `local_cmc_lms_get_companies`
@@ -89,6 +89,7 @@ La experiencia de alumno CMC se implementa como capa de lectura y notificación 
 - Certificados: lista certificados emitidos del alumno con descarga PDF autenticada y URL pública de verificación.
 - Notificaciones: tabla `local_cmc_lms_notification` para `course_start`, `inactivity_reminder` y `certificate_available`, con log idempotente y entrega opcional por `message_send()` mediante providers en `db/messages.php`.
 - Automatismos: observer de `\core\event\user_enrolment_created` para inicio de curso CMC, observer existente de `\core\event\course_completed` extendido para avisar certificado disponible, y tarea programada diaria `\local_cmc_lms\task\send_inactivity_reminders`.
+- Responsive validado: Moodle theme conserva la responsividad del layout general; `styles.css` del plugin refuerza tablas, formularios, botones y contenido largo para móviles/tablets. La matriz de validación está en `docs/RESPONSIVE_VALIDATION.md`.
 
 Límite operativo: el recordatorio de inactividad usa un umbral simple documentado de 7 días sin `user_lastaccess` reciente en el curso y es idempotente por usuario+curso+programa+tipo para evitar spam diario.
 
