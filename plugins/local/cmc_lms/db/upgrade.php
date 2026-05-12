@@ -53,8 +53,6 @@ function xmldb_local_cmc_lms_upgrade($oldversion): bool {
         $table->add_index('code', XMLDB_INDEX_UNIQUE, ['code']);
         $table->add_index('verifytoken', XMLDB_INDEX_UNIQUE, ['verifytoken']);
         $table->add_index('user_course', XMLDB_INDEX_NOTUNIQUE, ['userid', 'courseid']);
-        $table->add_index('companyid', XMLDB_INDEX_NOTUNIQUE, ['companyid']);
-        $table->add_index('programid', XMLDB_INDEX_NOTUNIQUE, ['programid']);
         $table->add_index('status', XMLDB_INDEX_NOTUNIQUE, ['status']);
 
         if (!$dbman->table_exists($table)) {
