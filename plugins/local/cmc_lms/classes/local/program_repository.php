@@ -195,6 +195,70 @@ class program_repository {
     }
 
     /**
+     * Return program-course links that have attendance tracking enabled.
+     *
+     * @return stdClass[]
+     */
+    public function list_attendance_course_links(): array {
+        global $DB;
+
+        $sql = "SELECT pc.id,
+                       pc.programid,
+                       pc.courseid,
+                       pc.sortorder,
+                       pc.schedulestart,
+                       pc.scheduleend,
+                       pc.liveprovider,
+                       pc.liveurl,
+                       pc.attendancetracking,
+                       p.name AS programname,
+                       p.shortname AS programshortname,
+                       c.fullname AS coursefullname,
+                       c.shortname AS courseshortname
+                  FROM {local_cmc_lms_program_course} pc
+                  JOIN {local_cmc_lms_program} p ON p.id = pc.programid
+                  JOIN {course} c ON c.id = pc.courseid
+                 WHERE pc.attendancetracking = :enabled
+              ORDER BY p.name ASC, pc.sortorder ASC, c.fullname ASC, pc.id ASC";
+
+        return array_values($DB->get_records_sql($sql, ['enabled' => 1]));
+    }
+
+    /**
+     * Return a program-course link with display context.
+     *
+     * @param int $programcourseid Program-course link id.
+     * @return stdClass
+     */
+    public function get_program_course_link(int $programcourseid): stdClass {
+        global $DB;
+
+        $sql = "SELECT pc.id,
+                       pc.programid,
+                       pc.courseid,
+                       pc.sortorder,
+                       pc.required,
+                       pc.contentlabel,
+                       pc.contentformat,
+                       pc.plannedhours,
+                       pc.schedulestart,
+                       pc.scheduleend,
+                       pc.liveprovider,
+                       pc.liveurl,
+                       pc.attendancetracking,
+                       p.name AS programname,
+                       p.shortname AS programshortname,
+                       c.fullname AS coursefullname,
+                       c.shortname AS courseshortname
+                  FROM {local_cmc_lms_program_course} pc
+                  JOIN {local_cmc_lms_program} p ON p.id = pc.programid
+                  JOIN {course} c ON c.id = pc.courseid
+                 WHERE pc.id = :programcourseid";
+
+        return $DB->get_record_sql($sql, ['programcourseid' => $programcourseid], MUST_EXIST);
+    }
+
+    /**
      * Record attendance for a user in a program-course link.
      *
      * @param int $programcourseid Program-course link id.
@@ -233,6 +297,70 @@ class program_repository {
             ['programcourseid' => $programcourseid],
             'timetaken ASC, id ASC'
         ));
+    }
+
+    /**
+     * Return active enrolled Moodle users for a program-course attendance roster.
+     *
+     * @param int $programcourseid Program-course link id.
+     * @return stdClass[]
+     */
+    public function get_attendance_roster(int $programcourseid): array {
+        global $DB;
+
+        $sql = "SELECT DISTINCT u.id,
+                       u.firstname,
+                       u.lastname,
+                       u.email,
+                       u.username
+                  FROM {local_cmc_lms_program_course} pc
+                  JOIN {enrol} e ON e.courseid = pc.courseid
+                  JOIN {user_enrolments} ue ON ue.enrolid = e.id
+                  JOIN {user} u ON u.id = ue.userid
+                 WHERE pc.id = :programcourseid
+                   AND e.status = :activeenrolinstance
+                   AND ue.status = :activeenrolment
+                   AND u.deleted = :notdeleted
+              ORDER BY u.lastname ASC, u.firstname ASC, u.id ASC";
+
+        return array_values($DB->get_records_sql($sql, [
+            'programcourseid' => $programcourseid,
+            'activeenrolinstance' => 0,
+            'activeenrolment' => 0,
+            'notdeleted' => 0,
+        ]));
+    }
+
+    /**
+     * Return attendance history rows joined with Moodle user display data.
+     *
+     * @param int $programcourseid Program-course link id.
+     * @return stdClass[]
+     */
+    public function get_attendance_with_users(int $programcourseid): array {
+        global $DB;
+
+        $sql = "SELECT a.id,
+                       a.programcourseid,
+                       a.userid,
+                       a.status,
+                       a.timetaken,
+                       a.timecreated,
+                       a.timemodified,
+                       u.firstname,
+                       u.lastname,
+                       u.email,
+                       u.username
+                  FROM {local_cmc_lms_attendance} a
+                  JOIN {user} u ON u.id = a.userid
+                 WHERE a.programcourseid = :programcourseid
+                   AND u.deleted = :notdeleted
+              ORDER BY a.timetaken DESC, a.id DESC";
+
+        return array_values($DB->get_records_sql($sql, [
+            'programcourseid' => $programcourseid,
+            'notdeleted' => 0,
+        ]));
     }
 
     /**

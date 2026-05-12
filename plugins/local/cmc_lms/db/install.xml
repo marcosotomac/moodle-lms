@@ -167,8 +167,6 @@
         <INDEX NAME="code" UNIQUE="true" FIELDS="code"/>
         <INDEX NAME="verifytoken" UNIQUE="true" FIELDS="verifytoken"/>
         <INDEX NAME="user_course" UNIQUE="false" FIELDS="userid, courseid"/>
-        <INDEX NAME="companyid" UNIQUE="false" FIELDS="companyid"/>
-        <INDEX NAME="programid" UNIQUE="false" FIELDS="programid"/>
         <INDEX NAME="status" UNIQUE="false" FIELDS="status"/>
       </INDEXES>
     </TABLE>

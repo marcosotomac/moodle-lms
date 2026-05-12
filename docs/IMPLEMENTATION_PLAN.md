@@ -160,7 +160,25 @@ Requerimientos atendidos:
 
 - LMS 5.7: reportes académicos mínimos de alumnos inscritos por curso, tasa de finalización, resultados de evaluación, certificados emitidos/revocados y actividad por empresa cliente.
 
+## Corte 9 — Registro administrativo de asistencia 5.2
+
+Objetivo: convertir la base de asistencia 5.2 en una pantalla usable para coordinadores, sin reemplazar matrículas ni sesiones de Moodle core.
+
+Incluye:
+
+- Página `/local/cmc_lms/attendance.php` protegida por `local/cmc_lms:manageattendance`.
+- Selector de vínculos Programa CMC → Curso Moodle con asistencia habilitada.
+- Roster generado desde matrículas Moodle activas del curso seleccionado.
+- Registro masivo de estados `present`, `absent`, `late` y `excused` con fecha/hora aplicable.
+- Historial de asistencia por sesión programa-curso.
+
+Decisión del corte: CMC registra la evidencia de asistencia del contexto B2B/programa, pero Moodle core conserva la autoridad sobre usuarios, matrículas y cursos. La integración API nativa Zoom/Meet sigue fuera de alcance; por ahora se conserva metadata `liveprovider`/`liveurl` y registro manual.
+
+Requerimientos atendidos:
+
+- LMS 5.2: registro operativo de asistencia en sesiones en vivo planificadas.
+
 ## Próximos cortes sugeridos
 
 1. Filtros por periodo/programa/empresa y exportación CSV/XLSX de reportes 5.7.
-2. UI/reportes de asistencia y reglas avanzadas de recordatorios configurables por programa.
+2. Reportes agregados de asistencia y reglas avanzadas de recordatorios configurables por programa.

@@ -52,6 +52,13 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+    'local/cmc_lms:manageattendance' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
     'local/cmc_lms:manageprogramroles' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,

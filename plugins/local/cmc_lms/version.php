@@ -16,8 +16,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026051112;
+$plugin->version = 2026051113;
 $plugin->requires = 2026041000;
 $plugin->component = 'local_cmc_lms';
 $plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.5.7';
+$plugin->release = '0.5.8';

@@ -10,7 +10,7 @@
 - Asociación ordenada Programa → Cursos.
 - Metadatos estrictos 5.1/5.2 para programas: versión, modalidad (`async`, `sync`, `blended`), resumen de cambios, vigencia, horas planificadas y estado activo.
 - Metadatos estrictos 5.1/5.2 para contenidos vinculados: rol/etiqueta, formato, reutilización, horas, agenda, proveedor/URL de sesión en vivo y bandera de asistencia.
-- Base mínima de asistencia por vínculo Programa → Curso y usuario (`present`, `absent`, `late`, `excused`).
+- Base mínima de asistencia por vínculo Programa → Curso y usuario (`present`, `absent`, `late`, `excused`) con UI administrativa para registrar asistencia de alumnos matriculados.
 - Fundación estricta 5.3 de roles/acceso CMC: constantes de negocio, capabilities, y asignaciones coordinador/docente por programa sin reemplazar roles Moodle de curso.
 - Cobertura estricta 5.4 para evaluaciones/control de aprendizaje mediante mapeo CMC a cuestionarios Moodle existentes, umbrales de aprobación y reporte histórico de intentos/calificaciones.
 - UI administrativa en Moodle para gestionar empresas, programas y cursos por programa.
@@ -109,14 +109,14 @@ Este plugin **no duplica** el modelo académico nativo de Moodle. Cursos, seccio
 
 - `local_cmc_lms_program`: versionado de programa, modalidad, notas de cambio, vigencia y horas planificadas.
 - `local_cmc_lms_program_course`: metadatos de rol/formato del contenido, trazabilidad de reutilización, horas planificadas, agenda, proveedor/URL de sesión sincrónica y activación de asistencia.
-- `local_cmc_lms_attendance`: fundación de asistencia por vínculo programa-curso y usuario, suficiente para registrar estados iniciales y ampliar reportes en slices posteriores.
+- `local_cmc_lms_attendance`: asistencia por vínculo programa-curso y usuario, con página administrativa para registrar presentes, ausentes, tarde o justificados sobre alumnos matriculados activos.
 
 La cobertura 5.1/5.2 de este slice es deliberadamente honesta: CMC estructura, versiona y agenda la oferta; Moodle core entrega el contenido real, actividades, lecciones, cuestionarios y recursos.
 
 ## Plan de implementación LMS 5.1/5.2
 
 1. ✅ Slice 1: metadatos/versionado de programas, modalidad, agenda y enlaces sincrónicos para contenidos, más tabla/repositorio de asistencia inicial.
-2. 🔲 Próximo slice: UI/reportes de asistencia, validaciones cruzadas de agenda y experiencia de edición de vínculos existentes.
+2. ✅ Slice 2: UI mínima de asistencia para sesiones programa-curso con alumnos matriculados activos e historial.
 3. 🔲 Próximo slice: indicadores de cobertura por programa usando actividades, lecciones y cuestionarios de Moodle core.
 
 ### `local_cmc_lms_enrol_user_in_program`
@@ -163,6 +163,7 @@ Una vez instalado, las páginas quedan bajo administración del sitio:
 - `Site administration → Plugins → CMC LMS domain → Client companies`
 - `Site administration → Plugins → CMC LMS domain → Training programs`
 - `Site administration → Plugins → CMC LMS domain → Program roles`
+- `Site administration → Plugins → CMC LMS domain → Attendance`
 - `Site administration → Plugins → CMC LMS domain → Certificates`
 - `Site administration → Plugins → CMC LMS domain → Evaluations`
 - `Site administration → Plugins → CMC LMS domain → CMC student panel` (solo usuarios con capability para ver otros paneles)
@@ -174,6 +175,7 @@ También se puede acceder directamente en desarrollo:
 /local/cmc_lms/companies.php
 /local/cmc_lms/programs.php
 /local/cmc_lms/program_roles.php
+/local/cmc_lms/attendance.php
 /local/cmc_lms/certificates.php
 /local/cmc_lms/certificate_download.php?certid=ID
 /local/cmc_lms/evaluations.php
