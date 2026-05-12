@@ -644,4 +644,114 @@ final class repository_test extends advanced_testcase {
         $this->assertEquals(1, $rows[0]->completedcourses);
         $this->assertEquals(50.0, $rows[0]->completionpercentage);
     }
+
+    /**
+     * Course enrolment report returns one row per CMC program-course link with completion rate.
+     */
+    public function test_report_repository_returns_course_enrolment_rows(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        $completedstudent = $this->getDataGenerator()->create_user();
+        $incompletestudent = $this->getDataGenerator()->create_user();
+        $linkedcourse = $this->getDataGenerator()->create_course([
+            'fullname' => 'Curso Reporte 5.7',
+            'shortname' => 'REP57',
+        ]);
+        $unlinkedcourse = $this->getDataGenerator()->create_course();
+
+        $programrepository = new program_repository();
+        $programid = $programrepository->create((object)[
+            'name' => 'Programa Reporte 5.7',
+            'shortname' => 'PROG57',
+            'description' => 'Malla para reporte académico.',
+        ]);
+        $programrepository->add_course($programid, (int)$linkedcourse->id, 10, true);
+
+        $this->getDataGenerator()->enrol_user((int)$completedstudent->id, (int)$linkedcourse->id);
+        $this->getDataGenerator()->enrol_user((int)$incompletestudent->id, (int)$linkedcourse->id);
+        $this->getDataGenerator()->enrol_user((int)$completedstudent->id, (int)$unlinkedcourse->id);
+        $DB->insert_record('course_completions', (object)[
+            'userid' => (int)$completedstudent->id,
+            'course' => (int)$linkedcourse->id,
+            'timecompleted' => time(),
+        ]);
+        $DB->insert_record('course_completions', (object)[
+            'userid' => (int)$completedstudent->id,
+            'course' => (int)$unlinkedcourse->id,
+            'timecompleted' => time(),
+        ]);
+
+        $rows = (new report_repository())->get_course_enrolment_rows();
+
+        $this->assertCount(1, $rows);
+        $this->assertEquals($programid, $rows[0]->programid);
+        $this->assertEquals((int)$linkedcourse->id, $rows[0]->courseid);
+        $this->assertEquals(2, $rows[0]->enrolledstudents);
+        $this->assertEquals(1, $rows[0]->completedstudents);
+        $this->assertEquals(1, $rows[0]->incompletestudents);
+        $this->assertEquals(50.0, $rows[0]->completionpercentage);
+    }
+
+    /**
+     * Certificate academic report includes issued/revoked status and joined context.
+     */
+    public function test_report_repository_returns_certificate_report_rows(): void {
+        $this->resetAfterTest(true);
+
+        $issuer = $this->getDataGenerator()->create_user();
+        $student = $this->getDataGenerator()->create_user([
+            'firstname' => 'Alan',
+            'lastname' => 'Turing',
+            'email' => 'alan@example.test',
+        ]);
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Criptografía aplicada',
+            'shortname' => 'CRIPTO',
+        ]);
+        $unlinkedcourse = $this->getDataGenerator()->create_course();
+        $companyrepository = new company_repository();
+        $companyid = $companyrepository->create((object)[
+            'name' => 'Empresa Cert Report',
+            'shortname' => 'CERT-REP',
+            'country' => 'PE',
+        ]);
+        $programrepository = new program_repository();
+        $programid = $programrepository->create((object)[
+            'name' => 'Programa Cert Report',
+            'shortname' => 'PROG-CERT-REP',
+            'description' => 'Malla para certificados reportables.',
+        ]);
+        $programrepository->add_course($programid, (int)$course->id, 10, true);
+
+        $certificaterepository = new certificate_repository();
+        $certificate = $certificaterepository->issue(
+            (int)$student->id,
+            (int)$course->id,
+            $companyid,
+            $programid,
+            (int)$issuer->id
+        );
+        $certificaterepository->revoke((int)$certificate->id, (int)$issuer->id, 'Reporte de prueba');
+        $certificaterepository->issue(
+            (int)$student->id,
+            (int)$unlinkedcourse->id,
+            $companyid,
+            $programid,
+            (int)$issuer->id
+        );
+
+        $rows = (new report_repository())->get_certificate_report_rows(10);
+
+        $this->assertCount(1, $rows);
+        $this->assertEquals((int)$certificate->id, $rows[0]->id);
+        $this->assertEquals('Alan Turing', $rows[0]->userfullname);
+        $this->assertEquals('alan@example.test', $rows[0]->useremail);
+        $this->assertEquals('Criptografía aplicada', $rows[0]->coursefullname);
+        $this->assertEquals('Empresa Cert Report', $rows[0]->companyname);
+        $this->assertEquals('Programa Cert Report', $rows[0]->programname);
+        $this->assertEquals(certificate_repository::STATUS_REVOKED, $rows[0]->status);
+        $this->assertNotEmpty($rows[0]->timerevoked);
+    }
 }

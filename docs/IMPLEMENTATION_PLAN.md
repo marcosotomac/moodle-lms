@@ -143,7 +143,24 @@ Requerimientos atendidos:
 
 - LMS 5.6: panel del estudiante con cursos activos, progreso, certificados y notificaciones automáticas.
 
+## Corte 8 — Reportes académicos mínimos 5.7
+
+Objetivo: cubrir LMS 5.7 con reportes académicos administrativos mínimos, sin duplicar motores nativos de Moodle.
+
+Incluye:
+
+- Repositorio `report_repository` extendido con filas de inscritos/finalización por curso CMC, resumen agregado de evaluaciones Moodle Quiz y certificados emitidos/revocados.
+- Página `/local/cmc_lms/reports.php` ampliada para mostrar actividad por empresa cliente, inscritos por curso, tasa de finalización, evaluaciones, certificados y detalle B2B existente.
+- Pruebas focalizadas para filas de matrícula/finalización por curso y reporte de certificados.
+- Versionado del plugin a `0.5.7` sin cambios de esquema.
+
+Decisión del corte: el reporte se acota estrictamente a cursos vinculados mediante `local_cmc_lms_program_course`. Moodle core conserva la autoridad sobre matrículas, completitud, Quiz y certificados PDF; CMC agrega agregación académica y trazabilidad B2B. `local/cmc_lms:viewreports` sigue protegiendo la página administrativa; `local/cmc_lms:viewcompanyreports` queda como base futura para una vista scoped de cliente.
+
+Requerimientos atendidos:
+
+- LMS 5.7: reportes académicos mínimos de alumnos inscritos por curso, tasa de finalización, resultados de evaluación, certificados emitidos/revocados y actividad por empresa cliente.
+
 ## Próximos cortes sugeridos
 
-1. Reportes académicos completos con inscritos por curso, evaluaciones, certificados por periodo y exportación.
+1. Filtros por periodo/programa/empresa y exportación CSV/XLSX de reportes 5.7.
 2. UI/reportes de asistencia y reglas avanzadas de recordatorios configurables por programa.

@@ -17,6 +17,7 @@
 - Reporte B2B administrativo con resumen por empresa y avance por usuario.
 - Cobertura estricta 5.5 para certificados CMC personalizados: emisión manual/automática por finalización Moodle, PDF descargable con QR de verificación, código único, token público, historial de generación y estado emitido/revocado.
 - Cobertura estricta 5.6 para experiencia del alumno: panel CMC con cursos activos, avance defensivo, certificados descargables/verificables y notificaciones persistidas/enviadas vía mensajería Moodle.
+- Cobertura estricta 5.7 para reportes académicos mínimos: inscritos por curso, tasa de finalización, resumen de resultados de evaluación, certificados emitidos/revocados y actividad por empresa cliente.
 - Funciones externas read/write listas para exponerse por `webservice_mcp`:
   - `local_cmc_lms_get_companies`
   - `local_cmc_lms_get_programs`
@@ -90,6 +91,17 @@ La experiencia de alumno CMC se implementa como capa de lectura y notificación 
 - Automatismos: observer de `\core\event\user_enrolment_created` para inicio de curso CMC, observer existente de `\core\event\course_completed` extendido para avisar certificado disponible, y tarea programada diaria `\local_cmc_lms\task\send_inactivity_reminders`.
 
 Límite operativo: el recordatorio de inactividad usa un umbral simple documentado de 7 días sin `user_lastaccess` reciente en el curso y es idempotente por usuario+curso+programa+tipo para evitar spam diario.
+
+## Cobertura estricta 5.7 — Reportes académicos mínimos
+
+La página `/local/cmc_lms/reports.php` queda como reporte académico administrativo mínimo, protegido por `local/cmc_lms:viewreports`:
+
+- Actividad por empresa cliente: conserva el resumen B2B y el detalle por usuario/empresa ya existente.
+- Inscritos por curso y tasa de finalización: una fila por vínculo Programa CMC → Curso Moodle, con alumnos matriculados, completados, activos/incompletos y porcentaje.
+- Resumen de evaluaciones: una fila por regla CMC activa sobre Moodle Quiz, con intentos, participantes, aprobados, porcentaje de aprobación y nota final promedio.
+- Certificados: últimos certificados emitidos o revocados, con alumno, curso, programa, empresa, estado, emisión y revocación.
+
+Límites deliberados: los reportes se acotan a cursos presentes en `local_cmc_lms_program_course`. Moodle Quiz sigue siendo la autoridad para intentos/notas; si las tablas de Quiz no están disponibles, el resumen de evaluación queda vacío de forma defensiva. La capability `local/cmc_lms:viewcompanyreports` queda como base futura para vistas acotadas a cliente, sin alterar esta página administrativa.
 
 ## Cobertura estricta 5.1/5.2 — Slice 1
 
@@ -175,8 +187,9 @@ Desde la lista de empresas se puede entrar a **Users** para asociar usuarios Moo
 
 ## Reportes B2B
 
-La página **B2B reports** requiere la capability `local/cmc_lms:viewreports` y muestra únicamente empresas activas.
+La página **B2B reports** requiere la capability `local/cmc_lms:viewreports` y muestra reportes académicos CMC mínimos.
 
 - Resumen por empresa: usuarios asociados activos, alumnos, supervisores cliente, matrículas en cursos Moodle vinculados a programas CMC, finalizaciones y porcentaje de finalización.
 - Detalle por empresa: usuarios activos asociados, rol en la empresa, cursos CMC matriculados, cursos CMC completados y porcentaje de avance.
+- Inscritos/finalización por curso CMC, resumen de evaluaciones Quiz y certificados emitidos/revocados.
 - Las métricas se limitan a cursos presentes en `local_cmc_lms_program_course`; cursos Moodle no vinculados a programas CMC quedan fuera del reporte.

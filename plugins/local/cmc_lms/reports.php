@@ -31,6 +31,9 @@ require_capability('local/cmc_lms:viewreports', $context);
 $reportrepository = new report_repository();
 $companyrepository = new company_repository();
 $companies = $reportrepository->get_company_dashboard_rows();
+$courseenrolments = $reportrepository->get_course_enrolment_rows();
+$evaluationsummaries = $reportrepository->get_evaluation_summary_rows();
+$certificatereports = $reportrepository->get_certificate_report_rows(100);
 $selectedcompany = null;
 $userrows = [];
 
@@ -47,37 +50,37 @@ echo $OUTPUT->heading(get_string('b2breports', 'local_cmc_lms'));
 
 if (empty($companies)) {
     echo $OUTPUT->notification(get_string('nocompanies', 'local_cmc_lms'), 'info');
-    echo $OUTPUT->footer();
-    exit;
-}
+} else {
+    echo $OUTPUT->heading(get_string('companyactivitysummary', 'local_cmc_lms'), 3);
 
-$summarytable = new html_table();
-$summarytable->head = [
-    get_string('companyname', 'local_cmc_lms'),
-    get_string('shortname'),
-    get_string('activeusers', 'local_cmc_lms'),
-    get_string('students', 'local_cmc_lms'),
-    get_string('supervisors', 'local_cmc_lms'),
-    get_string('enrolments', 'local_cmc_lms'),
-    get_string('completions', 'local_cmc_lms'),
-    get_string('completionpercentage', 'local_cmc_lms'),
-];
-
-foreach ($companies as $company) {
-    $companyurl = new moodle_url('/local/cmc_lms/reports.php', ['companyid' => $company->id]);
-    $summarytable->data[] = [
-        html_writer::link($companyurl, format_string($company->name)),
-        s($company->shortname),
-        $company->activeusers,
-        $company->students,
-        $company->supervisors,
-        $company->enrolmentcount,
-        $company->completioncount,
-        format_float($company->completionpercentage, 2) . '%',
+    $summarytable = new html_table();
+    $summarytable->head = [
+        get_string('companyname', 'local_cmc_lms'),
+        get_string('shortname'),
+        get_string('activeusers', 'local_cmc_lms'),
+        get_string('students', 'local_cmc_lms'),
+        get_string('supervisors', 'local_cmc_lms'),
+        get_string('enrolments', 'local_cmc_lms'),
+        get_string('completions', 'local_cmc_lms'),
+        get_string('completionpercentage', 'local_cmc_lms'),
     ];
-}
 
-echo html_writer::table($summarytable);
+    foreach ($companies as $company) {
+        $companyurl = new moodle_url('/local/cmc_lms/reports.php', ['companyid' => $company->id]);
+        $summarytable->data[] = [
+            html_writer::link($companyurl, format_string($company->name)),
+            s($company->shortname),
+            $company->activeusers,
+            $company->students,
+            $company->supervisors,
+            $company->enrolmentcount,
+            $company->completioncount,
+            format_float($company->completionpercentage, 2) . '%',
+        ];
+    }
+
+    echo html_writer::table($summarytable);
+}
 
 if ($selectedcompany !== null) {
     echo $OUTPUT->heading(
@@ -116,6 +119,102 @@ if ($selectedcompany !== null) {
 
         echo html_writer::table($detailtable);
     }
+}
+
+echo $OUTPUT->heading(get_string('courseenrolmentreport', 'local_cmc_lms'), 3);
+if (empty($courseenrolments)) {
+    echo $OUTPUT->notification(get_string('nocourseenrolmentreport', 'local_cmc_lms'), 'info');
+} else {
+    $coursetable = new html_table();
+    $coursetable->head = [
+        get_string('program', 'local_cmc_lms'),
+        get_string('course', 'local_cmc_lms'),
+        get_string('enrolledstudents', 'local_cmc_lms'),
+        get_string('completedstudents', 'local_cmc_lms'),
+        get_string('incompletestudents', 'local_cmc_lms'),
+        get_string('completionpercentage', 'local_cmc_lms'),
+    ];
+
+    foreach ($courseenrolments as $row) {
+        $coursetable->data[] = [
+            format_string($row->programname),
+            html_writer::link(new moodle_url('/course/view.php', ['id' => $row->courseid]), format_string($row->coursefullname)),
+            $row->enrolledstudents,
+            $row->completedstudents,
+            $row->incompletestudents,
+            format_float($row->completionpercentage, 2) . '%',
+        ];
+    }
+
+    echo html_writer::table($coursetable);
+}
+
+echo $OUTPUT->heading(get_string('evaluationresultssummary', 'local_cmc_lms'), 3);
+if (empty($evaluationsummaries)) {
+    echo $OUTPUT->notification(get_string('noevaluationresults', 'local_cmc_lms'), 'info');
+} else {
+    $evaluationtable = new html_table();
+    $evaluationtable->head = [
+        get_string('program', 'local_cmc_lms'),
+        get_string('course', 'local_cmc_lms'),
+        get_string('quizactivity', 'local_cmc_lms'),
+        get_string('attemptcount', 'local_cmc_lms'),
+        get_string('participants', 'local_cmc_lms'),
+        get_string('passed', 'local_cmc_lms'),
+        get_string('passpercentage', 'local_cmc_lms'),
+        get_string('averagefinalgrade', 'local_cmc_lms'),
+    ];
+
+    foreach ($evaluationsummaries as $row) {
+        $evaluationtable->data[] = [
+            empty($row->programname) ? get_string('notavailable', 'local_cmc_lms') : format_string($row->programname),
+            html_writer::link(new moodle_url('/course/view.php', ['id' => $row->courseid]), format_string($row->coursefullname)),
+            format_string($row->quizname),
+            $row->attempts,
+            $row->participants,
+            $row->passed,
+            format_float($row->passrate, 2) . '%',
+            $row->averagefinalgrade === null ? get_string('notavailable', 'local_cmc_lms') : format_float($row->averagefinalgrade, 2),
+        ];
+    }
+
+    echo html_writer::table($evaluationtable);
+}
+
+echo $OUTPUT->heading(get_string('certificatereport', 'local_cmc_lms'), 3);
+if (empty($certificatereports)) {
+    echo $OUTPUT->notification(get_string('nocertificates', 'local_cmc_lms'), 'info');
+} else {
+    $certificatetable = new html_table();
+    $certificatetable->head = [
+        get_string('certificatecode', 'local_cmc_lms'),
+        get_string('user'),
+        get_string('course', 'local_cmc_lms'),
+        get_string('program', 'local_cmc_lms'),
+        get_string('company', 'local_cmc_lms'),
+        get_string('status'),
+        get_string('issueddate', 'local_cmc_lms'),
+        get_string('revokeddate', 'local_cmc_lms'),
+    ];
+
+    foreach ($certificatereports as $row) {
+        $statuskey = $row->status;
+        $status = get_string_manager()->string_exists($statuskey, 'local_cmc_lms')
+            ? get_string($statuskey, 'local_cmc_lms')
+            : s($statuskey);
+        $certificatetable->data[] = [
+            html_writer::link(new moodle_url('/local/cmc_lms/verify_certificate.php', ['t' => $row->code]), s($row->code)),
+            html_writer::link(new moodle_url('/user/profile.php', ['id' => $row->userid]), s($row->userfullname)),
+            html_writer::link(new moodle_url('/course/view.php', ['id' => $row->courseid]), format_string($row->coursefullname)),
+            empty($row->programname) ? get_string('notavailable', 'local_cmc_lms') : format_string($row->programname),
+            empty($row->companyname) ? get_string('notavailable', 'local_cmc_lms') : format_string($row->companyname),
+            $status,
+            userdate($row->timeissued),
+            empty($row->timerevoked) ? get_string('notavailable', 'local_cmc_lms') : userdate($row->timerevoked),
+        ];
+    }
+
+    echo html_writer::table($certificatetable);
 }
 
 echo $OUTPUT->footer();
