@@ -18,9 +18,10 @@ require(__DIR__ . '/../../config.php');
 
 use local_cmc_lms\local\certificate_repository;
 
-$token = required_param('t', PARAM_ALPHANUMEXT);
+$token = optional_param('t', '', PARAM_ALPHANUMEXT);
 
-$url = new moodle_url('/local/cmc_lms/verify_certificate.php', ['t' => $token]);
+$urlparams = $token === '' ? [] : ['t' => $token];
+$url = new moodle_url('/local/cmc_lms/verify_certificate.php', $urlparams);
 $PAGE->set_url($url);
 $PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('standard');

@@ -131,6 +131,10 @@ class report_repository {
                        cu.companyrole,
                        u.firstname,
                        u.lastname,
+                       u.firstnamephonetic,
+                       u.lastnamephonetic,
+                       u.middlename,
+                       u.alternatename,
                        u.email,
                        COALESCE(enrolsummary.enrolledcourses, 0) AS enrolledcourses,
                        COALESCE(completionsummary.completedcourses, 0) AS completedcourses

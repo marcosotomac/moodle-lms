@@ -184,6 +184,10 @@ class role_repository {
                        pr.timemodified,
                        u.firstname,
                        u.lastname,
+                       u.firstnamephonetic,
+                       u.lastnamephonetic,
+                       u.middlename,
+                       u.alternatename,
                        u.email,
                        u.username
                   FROM {local_cmc_lms_program_role} pr

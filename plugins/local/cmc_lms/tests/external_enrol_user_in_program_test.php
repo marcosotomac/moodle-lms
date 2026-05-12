@@ -19,7 +19,6 @@ use local_cmc_lms\local\program_repository;
  * @package    local_cmc_lms
  * @copyright  2026 CMC & Soluciones en Gestión Humana
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_cmc_lms\external\enrol_user_in_program
  */
 final class external_enrol_user_in_program_test extends advanced_testcase {
     /**

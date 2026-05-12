@@ -24,14 +24,6 @@ use local_cmc_lms\local\student_repository;
  * @package    local_cmc_lms
  * @copyright  2026 CMC & Soluciones en Gestión Humana
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_cmc_lms\local\company_repository
- * @covers     \local_cmc_lms\local\certificate_repository
- * @covers     \local_cmc_lms\local\program_repository
- * @covers     \local_cmc_lms\local\report_repository
- * @covers     \local_cmc_lms\local\role_repository
- * @covers     \local_cmc_lms\local\evaluation_repository
- * @covers     \local_cmc_lms\local\student_repository
- * @covers     \local_cmc_lms\local\notification_service
  */
 final class repository_test extends advanced_testcase {
     /**
