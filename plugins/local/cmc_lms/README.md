@@ -10,6 +10,7 @@
 - Asociación ordenada Programa → Cursos.
 - Metadatos estrictos 5.1/5.2 para programas: versión, modalidad (`async`, `sync`, `blended`), resumen de cambios, vigencia, horas planificadas y estado activo.
 - Metadatos estrictos 5.1/5.2 para contenidos vinculados: rol/etiqueta, formato, reutilización, horas, agenda, proveedor/URL de sesión en vivo, creación vía API Zoom/Google Meet y bandera de asistencia.
+- Biblioteca CMC de contenidos reutilizables con versiones ISO inmutables, referencia normativa, URL fuente y vinculación auditable a múltiples cursos/programas.
 - Base mínima de asistencia por vínculo Programa → Curso y usuario (`present`, `absent`, `late`, `excused`) con UI administrativa para registrar asistencia de alumnos matriculados.
 - Integración real con proveedores síncronos: Zoom Server-to-Server OAuth y Google Meet REST API para crear sesiones y guardar URLs generadas.
 - Fundación estricta 5.3 de roles/acceso CMC: constantes de negocio, capabilities, y asignaciones coordinador/docente por programa sin reemplazar roles Moodle de curso.
@@ -110,18 +111,21 @@ Límites deliberados: los reportes se acotan a cursos presentes en `local_cmc_lm
 Este plugin **no duplica** el modelo académico nativo de Moodle. Cursos, secciones, actividades, recursos, lecciones, cuestionarios y finalizaciones siguen siendo responsabilidad de Moodle core y sus plugins estándar. El dominio CMC agrega la capa B2B/programática que Moodle core no conoce:
 
 - `local_cmc_lms_program`: versionado de programa, modalidad, notas de cambio, vigencia y horas planificadas.
-- `local_cmc_lms_program_course`: metadatos de rol/formato del contenido, trazabilidad de reutilización, horas planificadas, agenda, proveedor/URL de sesión sincrónica y activación de asistencia.
+- `local_cmc_lms_content_item`: biblioteca de contenidos reutilizables CMC con tipo (`video`, `document`, `external`, `lesson`, `quiz`, `other`), código, URL fuente, referencia ISO, descripción y estado activo.
+- `local_cmc_lms_content_version`: historial inmutable por contenido con versión, notas de cambio, vigencia, estado (`draft`, `published`, `obsolete`), creador y fecha de creación. Una corrección normativa ISO se registra como nueva versión, no como edición destructiva.
+- `local_cmc_lms_program_course`: metadatos de rol/formato del contenido, vínculo opcional a una versión reutilizable CMC, trazabilidad de reutilización, horas planificadas, agenda, proveedor/URL de sesión sincrónica y activación de asistencia.
 - `local_cmc_lms_program_course`: además persiste `liveexternalid`, `liveintegrationstatus` y `liveintegrationerror` para auditar creación vía API.
 - `local_cmc_lms_attendance`: asistencia por vínculo programa-curso y usuario, con página administrativa para registrar presentes, ausentes, tarde o justificados sobre alumnos matriculados activos.
 
-La cobertura 5.1/5.2 de este slice es deliberadamente honesta: CMC estructura, versiona y agenda la oferta; Moodle core entrega el contenido real, actividades, lecciones, cuestionarios y recursos.
+La cobertura 5.1/5.2 queda dividida correctamente: Moodle core entrega el contenido real, actividades, lecciones, cuestionarios y recursos; CMC agrega biblioteca reutilizable, versionamiento ISO inmutable y trazabilidad de qué versión se usó en cada programa/curso.
 
 ## Plan de implementación LMS 5.1/5.2
 
 1. ✅ Slice 1: metadatos/versionado de programas, modalidad, agenda y enlaces sincrónicos para contenidos, más tabla/repositorio de asistencia inicial.
 2. ✅ Slice 2: UI mínima de asistencia para sesiones programa-curso con alumnos matriculados activos e historial.
 3. ✅ Slice 3: integración real Zoom/Google Meet API para crear sesiones en vivo desde la vinculación programa-curso.
-4. 🔲 Próximo slice: indicadores de cobertura por programa usando actividades, lecciones y cuestionarios de Moodle core.
+4. ✅ Slice 4: biblioteca CMC de contenidos reutilizables y versionamiento ISO inmutable enlazable a múltiples programas/cursos.
+5. 🔲 Próximo slice: indicadores de cobertura por programa usando actividades, lecciones y cuestionarios de Moodle core.
 
 ### Integraciones Zoom / Google Meet
 

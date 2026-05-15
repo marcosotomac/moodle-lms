@@ -143,6 +143,12 @@ class program_repository {
         global $DB;
 
         $metadata = $metadata ?? new stdClass();
+        $contentversionid = (int)($metadata->contentversionid ?? 0);
+        $contentitemid = (int)($metadata->contentitemid ?? 0);
+        if ($contentversionid > 0) {
+            $version = (new content_repository())->get_version($contentversionid);
+            $contentitemid = (int)$version->contentitemid;
+        }
         $mapping = (object) [
             'programid' => $programid,
             'courseid' => $courseid,
@@ -150,6 +156,8 @@ class program_repository {
             'required' => $required ? 1 : 0,
             'contentlabel' => $metadata->contentlabel ?? '',
             'contentformat' => $this->normalise_choice($metadata->contentformat ?? 'other', self::CONTENT_FORMATS, 'other'),
+            'contentitemid' => $contentitemid > 0 ? $contentitemid : null,
+            'contentversionid' => $contentversionid > 0 ? $contentversionid : null,
             'reusenotes' => $metadata->reusenotes ?? '',
             'plannedhours' => (float)($metadata->plannedhours ?? 0),
             'schedulestart' => (int)($metadata->schedulestart ?? 0),
@@ -186,6 +194,8 @@ class program_repository {
                        pc.required,
                        pc.contentlabel,
                        pc.contentformat,
+                       pc.contentitemid,
+                       pc.contentversionid,
                        pc.reusenotes,
                        pc.plannedhours,
                        pc.schedulestart,
@@ -198,9 +208,17 @@ class program_repository {
                        pc.attendancetracking,
                        c.fullname,
                        c.shortname,
-                       c.visible
+                       c.visible,
+                       ci.name AS contentitemname,
+                       ci.code AS contentitemcode,
+                       ci.isoreference,
+                       cv.versioncode AS contentversioncode,
+                       cv.status AS contentversionstatus,
+                       cv.effectivefrom AS contentversioneffectivefrom
                   FROM {local_cmc_lms_program_course} pc
                   JOIN {course} c ON c.id = pc.courseid
+             LEFT JOIN {local_cmc_lms_content_item} ci ON ci.id = pc.contentitemid
+             LEFT JOIN {local_cmc_lms_content_version} cv ON cv.id = pc.contentversionid
                  WHERE pc.programid = :programid
               ORDER BY pc.sortorder ASC, c.fullname ASC";
 
@@ -226,6 +244,8 @@ class program_repository {
                        pc.liveexternalid,
                        pc.liveintegrationstatus,
                        pc.liveintegrationerror,
+                       pc.contentitemid,
+                       pc.contentversionid,
                        pc.attendancetracking,
                        p.name AS programname,
                        p.shortname AS programshortname,
@@ -256,6 +276,9 @@ class program_repository {
                        pc.required,
                        pc.contentlabel,
                        pc.contentformat,
+                       pc.contentitemid,
+                       pc.contentversionid,
+                       pc.reusenotes,
                        pc.plannedhours,
                        pc.schedulestart,
                        pc.scheduleend,
@@ -268,10 +291,18 @@ class program_repository {
                        p.name AS programname,
                        p.shortname AS programshortname,
                        c.fullname AS coursefullname,
-                       c.shortname AS courseshortname
+                       c.shortname AS courseshortname,
+                       ci.name AS contentitemname,
+                       ci.code AS contentitemcode,
+                       ci.isoreference,
+                       cv.versioncode AS contentversioncode,
+                       cv.status AS contentversionstatus,
+                       cv.effectivefrom AS contentversioneffectivefrom
                   FROM {local_cmc_lms_program_course} pc
                   JOIN {local_cmc_lms_program} p ON p.id = pc.programid
                   JOIN {course} c ON c.id = pc.courseid
+             LEFT JOIN {local_cmc_lms_content_item} ci ON ci.id = pc.contentitemid
+             LEFT JOIN {local_cmc_lms_content_version} cv ON cv.id = pc.contentversionid
                  WHERE pc.id = :programcourseid";
 
         return $DB->get_record_sql($sql, ['programcourseid' => $programcourseid], MUST_EXIST);

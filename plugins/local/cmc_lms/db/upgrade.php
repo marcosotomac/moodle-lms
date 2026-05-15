@@ -247,5 +247,65 @@ function xmldb_local_cmc_lms_upgrade($oldversion): bool {
         upgrade_plugin_savepoint(true, 2026051115, 'local', 'cmc_lms');
     }
 
+    if ($oldversion < 2026051116) {
+        $table = new xmldb_table('local_cmc_lms_content_item');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('code', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('contenttype', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'other');
+        $table->add_field('sourceurl', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('isoreference', XMLDB_TYPE_CHAR, '100', null, null, null, null);
+        $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('active', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_index('code', XMLDB_INDEX_UNIQUE, ['code']);
+        $table->add_index('contenttype', XMLDB_INDEX_NOTUNIQUE, ['contenttype']);
+        $table->add_index('active', XMLDB_INDEX_NOTUNIQUE, ['active']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        $table = new xmldb_table('local_cmc_lms_content_version');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('contentitemid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('versioncode', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('changenotes', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('effectivefrom', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('status', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'draft');
+        $table->add_field('immutable', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('createdby', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('contentitem_fk', XMLDB_KEY_FOREIGN, ['contentitemid'], 'local_cmc_lms_content_item', ['id']);
+        $table->add_index('item_version', XMLDB_INDEX_UNIQUE, ['contentitemid', 'versioncode']);
+        $table->add_index('status', XMLDB_INDEX_NOTUNIQUE, ['status']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        $table = new xmldb_table('local_cmc_lms_program_course');
+        $fields = [
+            new xmldb_field('contentitemid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'contentformat'),
+            new xmldb_field('contentversionid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'contentitemid'),
+        ];
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        $keys = [
+            new xmldb_key('contentitem_fk', XMLDB_KEY_FOREIGN, ['contentitemid'], 'local_cmc_lms_content_item', ['id']),
+            new xmldb_key('contentversion_fk', XMLDB_KEY_FOREIGN, ['contentversionid'], 'local_cmc_lms_content_version', ['id']),
+        ];
+        foreach ($keys as $key) {
+            $dbman->add_key($table, $key);
+        }
+
+        upgrade_plugin_savepoint(true, 2026051116, 'local', 'cmc_lms');
+    }
+
     return true;
 }

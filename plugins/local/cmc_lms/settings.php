@@ -19,6 +19,7 @@ defined('MOODLE_INTERNAL') || die();
 $capabilities = [
     'local/cmc_lms:viewcompanies',
     'local/cmc_lms:viewprograms',
+    'local/cmc_lms:manageprogramcontent',
     'local/cmc_lms:manageattendance',
     'local/cmc_lms:manageprogramroles',
     'local/cmc_lms:teachprograms',
@@ -125,6 +126,15 @@ if ($hassiteconfig || has_any_capability($capabilities, context_system::instance
             get_string('programs', 'local_cmc_lms'),
             new moodle_url('/local/cmc_lms/programs.php'),
             'local/cmc_lms:viewprograms'
+        )
+    );
+    $ADMIN->add(
+        'local_cmc_lms',
+        new admin_externalpage(
+            'local_cmc_lms_contentlibrary',
+            get_string('contentlibrary', 'local_cmc_lms'),
+            new moodle_url('/local/cmc_lms/content_library.php'),
+            'local/cmc_lms:manageprogramcontent'
         )
     );
     $ADMIN->add(

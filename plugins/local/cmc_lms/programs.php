@@ -66,6 +66,16 @@ foreach ($programs as $program) {
         if (!empty($course->contentformat) && $course->contentformat !== 'other') {
             $metadata[] = s($course->contentformat);
         }
+        if (!empty($course->contentitemname)) {
+            $contentlabel = format_string($course->contentitemname);
+            if (!empty($course->contentversioncode)) {
+                $contentlabel .= ' v' . s($course->contentversioncode);
+            }
+            if (!empty($course->isoreference)) {
+                $contentlabel .= ' · ' . s($course->isoreference);
+            }
+            $metadata[] = get_string('reusablecontent', 'local_cmc_lms') . ': ' . $contentlabel;
+        }
         if (!empty($course->schedulestart)) {
             $metadata[] = userdate($course->schedulestart, get_string('strftimedatetimeshort', 'langconfig'));
         }

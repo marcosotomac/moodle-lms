@@ -11,6 +11,7 @@ namespace local_cmc_lms;
 use advanced_testcase;
 use local_cmc_lms\local\certificate_repository;
 use local_cmc_lms\local\company_repository;
+use local_cmc_lms\local\content_repository;
 use local_cmc_lms\local\evaluation_repository;
 use local_cmc_lms\local\notification_service;
 use local_cmc_lms\local\program_repository;
@@ -388,6 +389,83 @@ final class repository_test extends advanced_testcase {
         $this->assertEquals('zoom', $courses[0]->liveprovider);
         $this->assertEquals('https://example.test/live/liderazgo', $courses[0]->liveurl);
         $this->assertEquals(1, (int) $courses[0]->attendancetracking);
+    }
+
+    /**
+     * Reusable content library stores immutable ISO versions and links them to program-course mappings.
+     */
+    public function test_content_repository_versions_are_reusable_across_program_courses(): void {
+        $this->resetAfterTest(true);
+
+        $author = $this->getDataGenerator()->create_user();
+        $courseone = $this->getDataGenerator()->create_course([
+            'fullname' => 'ISO 9001 Fundamentos',
+            'shortname' => 'ISO9001-FUND',
+        ]);
+        $coursetwo = $this->getDataGenerator()->create_course([
+            'fullname' => 'ISO 9001 Auditoría',
+            'shortname' => 'ISO9001-AUDIT',
+        ]);
+
+        $contentrepository = new content_repository();
+        $created = $contentrepository->create_item_with_initial_version((object)[
+            'name' => 'Normativa ISO 9001 reusable',
+            'code' => 'ISO9001-CORE',
+            'contenttype' => 'document',
+            'sourceurl' => 'https://example.test/iso9001.pdf',
+            'isoreference' => 'ISO 9001:2026',
+            'description' => 'Documento base reutilizable.',
+            'active' => 1,
+            'versioncode' => '2026.1',
+            'changenotes' => 'Actualización normativa inicial.',
+            'effectivefrom' => 1778457600,
+            'status' => 'published',
+        ], (int)$author->id);
+        $secondversionid = $contentrepository->create_version((int)$created->contentitemid, (object)[
+            'versioncode' => '2026.2',
+            'changenotes' => 'Corrección de cláusulas auditables.',
+            'effectivefrom' => 1781049600,
+            'status' => 'draft',
+        ], (int)$author->id);
+
+        $versions = $contentrepository->list_versions((int)$created->contentitemid);
+        $this->assertCount(2, $versions);
+        $this->assertEquals('2026.2', $versions[0]->versioncode);
+        $this->assertEquals(1, (int)$versions[0]->immutable);
+        $this->assertArrayHasKey($secondversionid, $contentrepository->get_version_options());
+
+        $programrepository = new program_repository();
+        $programoneid = $programrepository->create((object)[
+            'name' => 'Programa ISO Base',
+            'shortname' => 'ISO-BASE',
+            'description' => 'Programa base.',
+        ]);
+        $programtwoid = $programrepository->create((object)[
+            'name' => 'Programa ISO Auditor',
+            'shortname' => 'ISO-AUD',
+            'description' => 'Programa auditor.',
+        ]);
+
+        $programrepository->add_course($programoneid, (int)$courseone->id, 1, true, (object)[
+            'contentformat' => 'document',
+            'contentversionid' => $secondversionid,
+            'reusenotes' => 'Reutilizado como lectura base.',
+        ]);
+        $programrepository->add_course($programtwoid, (int)$coursetwo->id, 1, true, (object)[
+            'contentformat' => 'document',
+            'contentversionid' => $secondversionid,
+            'reusenotes' => 'Reutilizado para auditoría.',
+        ]);
+
+        $firstprogramcourses = $programrepository->get_courses($programoneid);
+        $secondprogramcourses = $programrepository->get_courses($programtwoid);
+
+        $this->assertEquals((int)$created->contentitemid, (int)$firstprogramcourses[0]->contentitemid);
+        $this->assertEquals($secondversionid, (int)$firstprogramcourses[0]->contentversionid);
+        $this->assertEquals($secondversionid, (int)$secondprogramcourses[0]->contentversionid);
+        $this->assertEquals('Normativa ISO 9001 reusable', $firstprogramcourses[0]->contentitemname);
+        $this->assertEquals('ISO 9001:2026', $firstprogramcourses[0]->isoreference);
+        $this->assertEquals('2026.2', $firstprogramcourses[0]->contentversioncode);
     }
 
     /**

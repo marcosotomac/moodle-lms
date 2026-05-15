@@ -215,6 +215,24 @@ Requerimientos atendidos:
 
 - LMS 5.2: integración real con Zoom / Google Meet para formación síncrona.
 
+## Corte 12 — Biblioteca reutilizable y versionamiento ISO inmutable 5.1
+
+Objetivo: convertir la reutilización y el versionamiento de contenidos ISO de metadata parcial a trazabilidad formal auditable.
+
+Incluye:
+
+- Biblioteca administrativa de contenidos CMC reutilizables bajo `CMC LMS domain → Reusable content library`.
+- Tabla `local_cmc_lms_content_item` para registrar nombre, código, tipo de contenido, URL fuente, referencia ISO, descripción y estado.
+- Tabla `local_cmc_lms_content_version` para registrar versiones inmutables con código, notas de cambio, vigencia, estado, creador y fecha de creación.
+- Selector de versión reusable en el formulario Programa → Curso; la misma versión puede vincularse a múltiples cursos y programas.
+- Trazabilidad visible en el listado de programas: contenido reusable, versión e ISO vinculada.
+
+Decisión del corte: Moodle core sigue siendo la fuente de verdad para el contenido ejecutable real —recursos, lecciones, módulos, SCORM, URL, PDF, H5P, quizzes—. CMC agrega control documental ISO: biblioteca reusable, historial inmutable y evidencia de qué versión normativa fue usada por cada vínculo programa-curso.
+
+Requerimientos atendidos:
+
+- LMS 5.1: reutilización estricta de contenidos entre cursos/programas y versionamiento formal de contenidos ISO.
+
 ## Próximos cortes sugeridos
 
 1. Filtros por periodo/programa/empresa y exportación CSV/XLSX de reportes 5.7.

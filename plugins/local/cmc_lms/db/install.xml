@@ -68,6 +68,49 @@
         <INDEX NAME="active" UNIQUE="false" FIELDS="active"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="local_cmc_lms_content_item" COMMENT="Reusable CMC content library items">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="code" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="contenttype" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="other" SEQUENCE="false"/>
+        <FIELD NAME="sourceurl" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="isoreference" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="code" UNIQUE="true" FIELDS="code"/>
+        <INDEX NAME="contenttype" UNIQUE="false" FIELDS="contenttype"/>
+        <INDEX NAME="active" UNIQUE="false" FIELDS="active"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_cmc_lms_content_version" COMMENT="Immutable ISO version history for reusable CMC content items">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="contentitemid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="versioncode" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="changenotes" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="effectivefrom" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="draft" SEQUENCE="false"/>
+        <FIELD NAME="immutable" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="createdby" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="contentitem_fk" TYPE="foreign" FIELDS="contentitemid" REFTABLE="local_cmc_lms_content_item" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="item_version" UNIQUE="true" FIELDS="contentitemid, versioncode"/>
+        <INDEX NAME="status" UNIQUE="false" FIELDS="status"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="local_cmc_lms_program_course" COMMENT="Ordered mapping between CMC programs and Moodle courses">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
@@ -77,6 +120,8 @@
         <FIELD NAME="required" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
         <FIELD NAME="contentlabel" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="contentformat" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="other" SEQUENCE="false"/>
+        <FIELD NAME="contentitemid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="contentversionid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="reusenotes" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="plannedhours" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="schedulestart" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -92,6 +137,8 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="program_fk" TYPE="foreign" FIELDS="programid" REFTABLE="local_cmc_lms_program" REFFIELDS="id"/>
+        <KEY NAME="contentitem_fk" TYPE="foreign" FIELDS="contentitemid" REFTABLE="local_cmc_lms_content_item" REFFIELDS="id"/>
+        <KEY NAME="contentversion_fk" TYPE="foreign" FIELDS="contentversionid" REFTABLE="local_cmc_lms_content_version" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="program_course" UNIQUE="true" FIELDS="programid, courseid"/>

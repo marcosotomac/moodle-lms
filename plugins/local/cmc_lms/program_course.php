@@ -18,6 +18,7 @@ require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 use local_cmc_lms\form\program_course_form;
+use local_cmc_lms\local\content_repository;
 use local_cmc_lms\local\live_session_service;
 use local_cmc_lms\local\program_repository;
 
@@ -31,6 +32,7 @@ require_capability('local/cmc_lms:manageprograms', $context);
 
 $repository = new program_repository();
 $program = $repository->get($programid);
+$contentversions = (new content_repository())->get_version_options();
 
 $PAGE->set_url(new moodle_url('/local/cmc_lms/program_course.php', ['programid' => $programid]));
 $PAGE->set_title(get_string('addcourse', 'local_cmc_lms'));
@@ -41,7 +43,11 @@ foreach ($courserecords as $course) {
     $courses[$course->id] = format_string($course->fullname) . ' (' . s($course->shortname) . ')';
 }
 
-$mform = new program_course_form($PAGE->url->out(false), ['programid' => $programid, 'courses' => $courses]);
+$mform = new program_course_form($PAGE->url->out(false), [
+    'programid' => $programid,
+    'courses' => $courses,
+    'contentversions' => $contentversions,
+]);
 $mform->set_data(['programid' => $programid]);
 
 if ($mform->is_cancelled()) {

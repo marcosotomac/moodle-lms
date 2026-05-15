@@ -72,6 +72,12 @@ class program_course_form extends moodleform {
         ]);
         $mform->setDefault('contentformat', 'other');
 
+        $contentversions = $this->_customdata['contentversions'] ?? [0 => get_string('none')];
+        $mform->addElement('select', 'contentversionid', get_string('reusablecontentversion', 'local_cmc_lms'), $contentversions);
+        $mform->addHelpButton('contentversionid', 'reusablecontentversion', 'local_cmc_lms');
+        $mform->setType('contentversionid', PARAM_INT);
+        $mform->setDefault('contentversionid', 0);
+
         $mform->addElement('textarea', 'reusenotes', get_string('reusenotes', 'local_cmc_lms'), ['rows' => 3, 'cols' => 60]);
         $mform->setType('reusenotes', PARAM_TEXT);
 
