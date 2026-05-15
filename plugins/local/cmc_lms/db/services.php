@@ -83,6 +83,14 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/cmc_lms:manageprograms,local/cmc_lms:managecompanies',
     ],
+    'local_cmc_lms_provision_user_in_program' => [
+        'classname' => 'local_cmc_lms\external\provision_user_in_program',
+        'methodname' => 'execute',
+        'description' => 'Creates or reuses a Moodle user, associates the user to a CMC company, and enrols the user in a CMC program.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/cmc_lms:manageprograms,local/cmc_lms:managecompanies',
+    ],
     'local_cmc_lms_assign_program_role' => [
         'classname' => 'local_cmc_lms\external\assign_program_role',
         'methodname' => 'execute',
@@ -112,6 +120,7 @@ $services = [
             'local_cmc_lms_get_company_users',
             'local_cmc_lms_add_company_user',
             'local_cmc_lms_enrol_user_in_program',
+            'local_cmc_lms_provision_user_in_program',
             'local_cmc_lms_assign_program_role',
             'local_cmc_lms_get_evaluation_rules',
         ],

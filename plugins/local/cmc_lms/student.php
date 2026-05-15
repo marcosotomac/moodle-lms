@@ -17,6 +17,7 @@
 require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/tablelib.php');
 
+use local_cmc_lms\local\access_helper;
 use local_cmc_lms\local\student_repository;
 
 $userid = optional_param('userid', 0, PARAM_INT);
@@ -25,8 +26,9 @@ require_login();
 
 $context = context_system::instance();
 $targetuserid = $userid > 0 ? $userid : (int)$USER->id;
-if ($targetuserid !== (int)$USER->id) {
-    require_capability('local/cmc_lms:viewstudentpanel', $context);
+$access = new access_helper();
+if (!$access->can_view_student($targetuserid)) {
+    throw new moodle_exception('nopermissions', 'error', '', get_string('studentpanel', 'local_cmc_lms'));
 }
 
 $targetuser = $DB->get_record('user', ['id' => $targetuserid, 'deleted' => 0], '*', MUST_EXIST);

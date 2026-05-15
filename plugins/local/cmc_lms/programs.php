@@ -18,15 +18,26 @@ require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
+use local_cmc_lms\local\access_helper;
 use local_cmc_lms\local\program_repository;
 
-admin_externalpage_setup('local_cmc_lms_programs');
-
 $context = context_system::instance();
-require_capability('local/cmc_lms:viewprograms', $context);
+$access = new access_helper();
+if (has_capability('local/cmc_lms:viewprograms', $context)) {
+    admin_externalpage_setup('local_cmc_lms_programs');
+} else {
+    require_login();
+    $PAGE->set_context($context);
+    $PAGE->set_url(new moodle_url('/local/cmc_lms/programs.php'));
+    $PAGE->set_title(get_string('programs', 'local_cmc_lms'));
+    $PAGE->set_heading(get_string('programs', 'local_cmc_lms'));
+}
+if (!$access->can_view_any_program()) {
+    throw new moodle_exception('nopermissions', 'error', '', get_string('programs', 'local_cmc_lms'));
+}
 
 $repository = new program_repository();
-$programs = $repository->list_with_courses(false);
+$programs = $access->filter_programs($repository->list_with_courses(false));
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('programs', 'local_cmc_lms'));

@@ -29,6 +29,7 @@ $capabilities = [
     'local/cmc_lms:viewstudentpanel',
 ];
 
+
 if ($hassiteconfig || has_any_capability($capabilities, context_system::instance())) {
     $ADMIN->add('localplugins', new admin_category('local_cmc_lms', get_string('pluginname', 'local_cmc_lms')));
 
@@ -182,13 +183,14 @@ if ($hassiteconfig || has_any_capability($capabilities, context_system::instance
             'local/cmc_lms:viewstudentpanel'
         )
     );
+    $reportcapability = 'local/cmc_lms:viewreports';
     $ADMIN->add(
         'local_cmc_lms',
         new admin_externalpage(
             'local_cmc_lms_reports',
             get_string('b2breports', 'local_cmc_lms'),
             new moodle_url('/local/cmc_lms/reports.php'),
-            'local/cmc_lms:viewreports'
+            $reportcapability
         )
     );
 }

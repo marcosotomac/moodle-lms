@@ -30,6 +30,7 @@
   - `local_cmc_lms_get_company_users`
   - `local_cmc_lms_add_company_user`
   - `local_cmc_lms_enrol_user_in_program`
+  - `local_cmc_lms_provision_user_in_program`
   - `local_cmc_lms_assign_program_role`
   - `local_cmc_lms_get_evaluation_rules`
 
@@ -63,8 +64,10 @@ Moodle core sigue siendo la autoridad para autenticación, creación de usuarios
   - `local/cmc_lms:viewstudentpanel` como base del panel de alumno.
   - `local/cmc_lms:viewcompanyreports` como base para reportes acotados por cliente/empresa.
 - Tabla `local_cmc_lms_program_role`: asigna Moodle users a programas CMC con rol `coordinator`, `teacher_internal` o `teacher_external` y bandera activa. Esto complementa Moodle enrolment roles; NO decide permisos dentro del curso.
+- Acceso scoped por rol CMC: coordinadores/docentes asignados ven sus programas y pueden registrar asistencia de sus sesiones; supervisores cliente ven sus empresas, reportes de empresa y paneles de alumnos asociados; alumnos ven su propio panel.
+- Provisioning automático: `local_cmc_lms_provision_user_in_program` crea o reutiliza un usuario Moodle, lo asocia a empresa cliente y lo matricula en todos los cursos vinculados al programa CMC usando enrolment manual y rol Moodle configurable.
 
-No se crean usuarios Moodle automáticamente en este slice. La creación manual/automática queda en Moodle core/auth/MCP según la configuración de la plataforma.
+La creación manual de usuarios sigue disponible en Moodle core. La creación automática CMC se expone como función externa protegida por `local/cmc_lms:managecompanies` y `local/cmc_lms:manageprograms`; si no se envía password inicial, se genera una contraseña temporal y se fuerza cambio de contraseña.
 
 ## Cobertura estricta 5.5 — Certificados CMC
 
@@ -145,6 +148,16 @@ Asocia idempotentemente un usuario Moodle a una empresa cliente y lo matricula m
 - Requiere contexto sistema y ambas capabilities: `local/cmc_lms:managecompanies` y `local/cmc_lms:manageprograms`.
 - Valida existencia de empresa, programa, usuario activo/no eliminado y rol Moodle por shortname.
 - Retorna `companyassociationid`, ids de entrada y `enrolments[]` con `courseid`, `shortname` y `status` (`enrolled` o `already_enrolled`).
+
+### `local_cmc_lms_provision_user_in_program`
+
+Crea automáticamente un usuario Moodle o reutiliza uno existente por `username`/`email`, lo asocia a empresa cliente y lo matricula en todos los cursos Moodle del programa CMC.
+
+- Parámetros: `companyid`, `programid`, `email`, `firstname`, `lastname`, `username` opcional, `password` opcional, `companyrole` opcional (`student`), `roleshortname` opcional (`student`).
+- Requiere contexto sistema y ambas capabilities: `local/cmc_lms:managecompanies` y `local/cmc_lms:manageprograms`.
+- Si no existe usuario, crea cuenta `manual`, confirmada, con password entregada o temporal generada; cuando la password es generada, fuerza cambio en el primer acceso.
+- Si existe usuario activo por username/email, lo reutiliza sin duplicar cuentas.
+- Retorna `userid`, `userstatus` (`created`/`existing`), `companyassociationid`, ids de entrada y `enrolments[]`.
 
 ### `local_cmc_lms_assign_program_role`
 

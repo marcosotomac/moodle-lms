@@ -19,17 +19,28 @@ require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
 use local_cmc_lms\form\attendance_form;
+use local_cmc_lms\local\access_helper;
 use local_cmc_lms\local\program_repository;
 
 $programcourseid = optional_param('programcourseid', 0, PARAM_INT);
 
-admin_externalpage_setup('local_cmc_lms_attendance');
-
 $context = context_system::instance();
-require_capability('local/cmc_lms:manageattendance', $context);
+$access = new access_helper();
+if (has_capability('local/cmc_lms:manageattendance', $context)) {
+    admin_externalpage_setup('local_cmc_lms_attendance');
+} else {
+    require_login();
+    $PAGE->set_context($context);
+    $PAGE->set_url(new moodle_url('/local/cmc_lms/attendance.php', ['programcourseid' => $programcourseid]));
+    $PAGE->set_title(get_string('attendance', 'local_cmc_lms'));
+    $PAGE->set_heading(get_string('attendance', 'local_cmc_lms'));
+}
+if (!$access->can_manage_any_attendance()) {
+    throw new moodle_exception('nopermissions', 'error', '', get_string('attendance', 'local_cmc_lms'));
+}
 
 $repository = new program_repository();
-$links = $repository->list_attendance_course_links();
+$links = $access->filter_attendance_links($repository->list_attendance_course_links());
 $linkoptions = [];
 foreach ($links as $link) {
     $label = format_string($link->programname) . ' / ' . format_string($link->coursefullname);

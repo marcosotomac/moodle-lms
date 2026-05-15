@@ -18,15 +18,26 @@ require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
+use local_cmc_lms\local\access_helper;
 use local_cmc_lms\local\company_repository;
 
-admin_externalpage_setup('local_cmc_lms_companies');
-
 $context = context_system::instance();
-require_capability('local/cmc_lms:viewcompanies', $context);
+$access = new access_helper();
+if (has_capability('local/cmc_lms:viewcompanies', $context)) {
+    admin_externalpage_setup('local_cmc_lms_companies');
+} else {
+    require_login();
+    $PAGE->set_context($context);
+    $PAGE->set_url(new moodle_url('/local/cmc_lms/companies.php'));
+    $PAGE->set_title(get_string('companies', 'local_cmc_lms'));
+    $PAGE->set_heading(get_string('companies', 'local_cmc_lms'));
+}
+if (!$access->can_view_any_company()) {
+    throw new moodle_exception('nopermissions', 'error', '', get_string('companies', 'local_cmc_lms'));
+}
 
 $repository = new company_repository();
-$companies = $repository->list(false);
+$companies = $access->filter_companies($repository->list(false));
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('companies', 'local_cmc_lms'));
@@ -62,6 +73,11 @@ foreach ($companies as $company) {
             get_string('edit', 'local_cmc_lms')
         );
         $actions .= ' | ' . html_writer::link(
+            new moodle_url('/local/cmc_lms/company_users.php', ['companyid' => $company->id]),
+            get_string('users', 'local_cmc_lms')
+        );
+    } else if ($access->can_view_company((int)$company->id)) {
+        $actions = html_writer::link(
             new moodle_url('/local/cmc_lms/company_users.php', ['companyid' => $company->id]),
             get_string('users', 'local_cmc_lms')
         );

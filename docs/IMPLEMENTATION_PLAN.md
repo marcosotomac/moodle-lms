@@ -78,12 +78,14 @@ Incluye:
 - Tabla `local_cmc_lms_program_role` para asignar coordinadores/docentes a programas CMC sin duplicar los roles de curso Moodle.
 - UI administrativa y tool MCP `local_cmc_lms_assign_program_role` para asignaciones de roles por programa.
 - Capabilities CMC para gestión de contenido académico, roles de programa, docencia, panel alumno y reportes por empresa.
+- Tool MCP/API `local_cmc_lms_provision_user_in_program` para crear/reutilizar usuarios Moodle automáticamente, asociarlos a empresa y matricularlos en programas completos.
+- Helper de acceso scoped por rol CMC: coordinadores/docentes limitados a programas asignados; supervisores cliente limitados a sus empresas/reportes/alumnos; alumnos limitados a su propio panel.
 
 Decisión del corte: Moodle core sigue manejando creación manual/automática de usuarios, autenticación, roles de curso y permisos dentro del curso. El plugin CMC agrega la capa B2B/programa necesaria para segmentación, reportes, dashboards y flujos académicos propios.
 
 Requerimientos atendidos:
 
-- LMS 5.3: roles mínimos del dominio, asociación a empresas/programas y base de accesos diferenciados.
+- LMS 5.3: roles mínimos del dominio, creación manual/automática de usuarios, asociación a cursos/programas/empresas, docentes internos/externos y accesos diferenciados scoped por rol.
 
 ## Corte 5 — Evaluaciones CMC sobre Moodle Quiz
 

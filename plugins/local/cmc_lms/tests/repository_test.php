@@ -9,6 +9,7 @@
 namespace local_cmc_lms;
 
 use advanced_testcase;
+use local_cmc_lms\local\access_helper;
 use local_cmc_lms\local\certificate_repository;
 use local_cmc_lms\local\company_repository;
 use local_cmc_lms\local\content_repository;
@@ -18,6 +19,7 @@ use local_cmc_lms\local\program_repository;
 use local_cmc_lms\local\report_repository;
 use local_cmc_lms\local\role_repository;
 use local_cmc_lms\local\student_repository;
+use local_cmc_lms\local\user_provisioning_service;
 
 /**
  * Repository tests for local_cmc_lms.
@@ -527,6 +529,111 @@ final class repository_test extends advanced_testcase {
         $this->assertEquals(role_repository::ROLE_TEACHER_INTERNAL, $rows[0]->cmcrole);
         $this->assertEquals(1, (int)$rows[0]->active);
         $this->assertEquals('Marie Curie', fullname($rows[0]));
+    }
+
+    /**
+     * Automatic provisioning creates Moodle users, associates company context and enrols program courses.
+     */
+    public function test_user_provisioning_service_creates_user_and_enrols_program(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Curso provisionado CMC',
+            'shortname' => 'PROV-CMC',
+        ]);
+        $companyrepository = new company_repository();
+        $companyid = $companyrepository->create((object)[
+            'name' => 'Empresa Provisioning',
+            'shortname' => 'PROV',
+        ]);
+        $programrepository = new program_repository();
+        $programid = $programrepository->create((object)[
+            'name' => 'Programa Provisioning',
+            'shortname' => 'PROV-PROG',
+            'description' => 'Alta automática de usuarios.',
+        ]);
+        $programrepository->add_course($programid, (int)$course->id);
+
+        $result = (new user_provisioning_service())->provision((object)[
+            'companyid' => $companyid,
+            'programid' => $programid,
+            'email' => 'provisioned@example.test',
+            'firstname' => 'Ada',
+            'lastname' => 'Provisioned',
+            'companyrole' => role_repository::ROLE_STUDENT,
+            'roleshortname' => 'student',
+        ]);
+
+        $user = $DB->get_record('user', ['id' => $result->userid], '*', MUST_EXIST);
+        $coursecontext = \context_course::instance((int)$course->id);
+
+        $this->assertEquals(user_provisioning_service::USER_STATUS_CREATED, $result->userstatus);
+        $this->assertEquals('provisioned@example.test', $user->email);
+        $this->assertTrue(is_enrolled($coursecontext, (int)$user->id, '', true));
+        $this->assertNotEmpty($companyrepository->list_users($companyid));
+
+        $second = (new user_provisioning_service())->provision((object)[
+            'companyid' => $companyid,
+            'programid' => $programid,
+            'email' => 'provisioned@example.test',
+            'firstname' => 'Ada',
+            'lastname' => 'Provisioned',
+            'companyrole' => role_repository::ROLE_STUDENT,
+            'roleshortname' => 'student',
+        ]);
+
+        $this->assertEquals((int)$user->id, (int)$second->userid);
+        $this->assertEquals(user_provisioning_service::USER_STATUS_EXISTING, $second->userstatus);
+        $this->assertEquals('already_enrolled', $second->enrolments[0]['status']);
+    }
+
+    /**
+     * CMC business roles grant scoped program, company and student visibility.
+     */
+    public function test_access_helper_applies_cmc_role_scopes(): void {
+        $this->resetAfterTest(true);
+
+        $teacher = $this->getDataGenerator()->create_user();
+        $supervisor = $this->getDataGenerator()->create_user();
+        $student = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $this->getDataGenerator()->enrol_user((int)$student->id, (int)$course->id);
+
+        $programrepository = new program_repository();
+        $programid = $programrepository->create((object)[
+            'name' => 'Programa Scoped',
+            'shortname' => 'SCOPED',
+            'description' => 'Acceso scoped por rol CMC.',
+        ]);
+        $otherprogramid = $programrepository->create((object)[
+            'name' => 'Programa Ajeno',
+            'shortname' => 'AJENO',
+            'description' => 'No visible para docente scoped.',
+        ]);
+        $programrepository->add_course($programid, (int)$course->id);
+        (new role_repository())->assign_program_role($programid, (int)$teacher->id, role_repository::ROLE_TEACHER_EXTERNAL, true);
+
+        $companyrepository = new company_repository();
+        $companyid = $companyrepository->create((object)[
+            'name' => 'Empresa Scoped',
+            'shortname' => 'SCOPECO',
+        ]);
+        $companyrepository->add_user($companyid, (int)$supervisor->id, role_repository::ROLE_CLIENT_SUPERVISOR, true);
+        $companyrepository->add_user($companyid, (int)$student->id, role_repository::ROLE_STUDENT, true);
+
+        $access = new access_helper();
+        $filtered = $access->filter_programs($programrepository->list_with_courses(false), (int)$teacher->id);
+
+        $this->assertTrue($access->can_view_any_program((int)$teacher->id));
+        $this->assertCount(1, $filtered);
+        $this->assertEquals($programid, (int)$filtered[0]->id);
+        $this->assertNotEquals($otherprogramid, (int)$filtered[0]->id);
+        $this->assertTrue($access->can_view_company($companyid, (int)$supervisor->id));
+        $this->assertTrue($access->can_view_company_report($companyid, (int)$supervisor->id));
+        $this->assertTrue($access->can_view_student((int)$student->id, (int)$supervisor->id));
+        $this->assertTrue($access->can_view_student((int)$student->id, (int)$teacher->id));
     }
 
     /**

@@ -18,26 +18,42 @@ require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
+use local_cmc_lms\local\access_helper;
 use local_cmc_lms\local\company_repository;
 use local_cmc_lms\local\report_repository;
 
 $companyid = optional_param('companyid', 0, PARAM_INT);
 
-admin_externalpage_setup('local_cmc_lms_reports');
-
 $context = context_system::instance();
-require_capability('local/cmc_lms:viewreports', $context);
+$access = new access_helper();
+$canviewglobalreports = has_capability('local/cmc_lms:viewreports', $context);
+if ($canviewglobalreports) {
+    admin_externalpage_setup('local_cmc_lms_reports');
+} else {
+    require_login();
+    $PAGE->set_context($context);
+    $PAGE->set_url(new moodle_url('/local/cmc_lms/reports.php', ['companyid' => $companyid]));
+    $PAGE->set_title(get_string('b2breports', 'local_cmc_lms'));
+    $PAGE->set_heading(get_string('b2breports', 'local_cmc_lms'));
+}
 
 $reportrepository = new report_repository();
 $companyrepository = new company_repository();
-$companies = $reportrepository->get_company_dashboard_rows();
-$courseenrolments = $reportrepository->get_course_enrolment_rows();
-$evaluationsummaries = $reportrepository->get_evaluation_summary_rows();
-$certificatereports = $reportrepository->get_certificate_report_rows(100);
+$companies = $access->filter_companies($reportrepository->get_company_dashboard_rows());
+$courseenrolments = $canviewglobalreports ? $reportrepository->get_course_enrolment_rows() : [];
+$evaluationsummaries = $canviewglobalreports ? $reportrepository->get_evaluation_summary_rows() : [];
+$certificatereports = $canviewglobalreports ? $reportrepository->get_certificate_report_rows(100) : [];
 $selectedcompany = null;
 $userrows = [];
 
+if (!$canviewglobalreports && empty($companies)) {
+    throw new moodle_exception('nopermissions', 'error', '', get_string('b2breports', 'local_cmc_lms'));
+}
+
 if ($companyid > 0) {
+    if (!$access->can_view_company_report($companyid)) {
+        throw new moodle_exception('nopermissions', 'error', '', get_string('b2breports', 'local_cmc_lms'));
+    }
     $selectedcompany = $companyrepository->get($companyid);
     if (!$selectedcompany->active) {
         throw new moodle_exception('invalidcompany', 'local_cmc_lms');
@@ -121,10 +137,11 @@ if ($selectedcompany !== null) {
     }
 }
 
-echo $OUTPUT->heading(get_string('courseenrolmentreport', 'local_cmc_lms'), 3);
-if (empty($courseenrolments)) {
-    echo $OUTPUT->notification(get_string('nocourseenrolmentreport', 'local_cmc_lms'), 'info');
-} else {
+if ($canviewglobalreports) {
+    echo $OUTPUT->heading(get_string('courseenrolmentreport', 'local_cmc_lms'), 3);
+    if (empty($courseenrolments)) {
+        echo $OUTPUT->notification(get_string('nocourseenrolmentreport', 'local_cmc_lms'), 'info');
+    } else {
     $coursetable = new html_table();
     $coursetable->head = [
         get_string('program', 'local_cmc_lms'),
@@ -147,12 +164,14 @@ if (empty($courseenrolments)) {
     }
 
     echo html_writer::table($coursetable);
+    }
 }
 
-echo $OUTPUT->heading(get_string('evaluationresultssummary', 'local_cmc_lms'), 3);
-if (empty($evaluationsummaries)) {
-    echo $OUTPUT->notification(get_string('noevaluationresults', 'local_cmc_lms'), 'info');
-} else {
+if ($canviewglobalreports) {
+    echo $OUTPUT->heading(get_string('evaluationresultssummary', 'local_cmc_lms'), 3);
+    if (empty($evaluationsummaries)) {
+        echo $OUTPUT->notification(get_string('noevaluationresults', 'local_cmc_lms'), 'info');
+    } else {
     $evaluationtable = new html_table();
     $evaluationtable->head = [
         get_string('program', 'local_cmc_lms'),
@@ -179,12 +198,14 @@ if (empty($evaluationsummaries)) {
     }
 
     echo html_writer::table($evaluationtable);
+    }
 }
 
-echo $OUTPUT->heading(get_string('certificatereport', 'local_cmc_lms'), 3);
-if (empty($certificatereports)) {
-    echo $OUTPUT->notification(get_string('nocertificates', 'local_cmc_lms'), 'info');
-} else {
+if ($canviewglobalreports) {
+    echo $OUTPUT->heading(get_string('certificatereport', 'local_cmc_lms'), 3);
+    if (empty($certificatereports)) {
+        echo $OUTPUT->notification(get_string('nocertificates', 'local_cmc_lms'), 'info');
+    } else {
     $certificatetable = new html_table();
     $certificatetable->head = [
         get_string('certificatecode', 'local_cmc_lms'),
@@ -215,6 +236,7 @@ if (empty($certificatereports)) {
     }
 
     echo html_writer::table($certificatetable);
+    }
 }
 
 echo $OUTPUT->footer();
